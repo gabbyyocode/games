@@ -91,8 +91,8 @@ function App() {
             <p className="hero-description">
               A home for the games I dream up, make, and can’t wait to share. Pick a world and come play.
             </p>
-            <a className="button button-primary" href="#games">
-              Explore the games <span aria-hidden="true">↓</span>
+            <a className="button button-primary" href="#flying-dragon">
+              Play Flying Dragon <span aria-hidden="true">↓</span>
             </a>
             <div className="hero-note">
               <span className="note-sparkle" aria-hidden="true">✳</span>
@@ -118,14 +118,14 @@ function App() {
             <p className="section-aside">Take the controls.<br />See how far you can fly.</p>
           </div>
 
-          <article className="game-card game-feature">
+          <article className="game-card game-feature" id="flying-dragon">
             <div className="game-info game-feature-info">
               <div className="game-meta">
                 <span className="status"><span /> NOW PLAYABLE</span>
                 <span className="game-number">NO. 001</span>
               </div>
               <h3>Flying Dragon</h3>
-              <p>Fly over the whales and help this little dragon stay dry. How far can you fly?</p>
+              <p>Fly over the whales, then stop tapping to dive under lightning after 10 points. How far can you fly?</p>
             </div>
             <FlyingDragonGame />
           </article>

@@ -9,6 +9,11 @@ const WHALE_SPACING = 420;
 const BLOWHOLE_X = 46;
 const SPRAY_HALF = 16;
 const FLOOR_Y = 484;
+const STORM_TARGET_X = DRAGON_X - 55;
+const STORM_BOLT_TOP = 128;
+const STORM_BOLT_BOTTOM = 270;
+const STORM_WARNING_SECONDS = 1.5;
+const STORM_DANGER_SECONDS = 0.14;
 
 type Obstacle = {
   x: number;
@@ -18,6 +23,12 @@ type Obstacle = {
 
 type GamePhase = "ready" | "playing" | "over";
 
+type Storm = {
+  x: number;
+  phase: "approach" | "warning" | "strike" | "fade";
+  elapsed: number;
+};
+
 type GameWorld = {
   phase: GamePhase;
   dragonY: number;
@@ -25,6 +36,8 @@ type GameWorld = {
   obstacles: Obstacle[];
   score: number;
   elapsed: number;
+  storm: Storm | null;
+  nextStormScore: number;
 };
 
 function makeWorld(phase: GamePhase = "ready"): GameWorld {
@@ -39,6 +52,8 @@ function makeWorld(phase: GamePhase = "ready"): GameWorld {
     ],
     score: 0,
     elapsed: 0,
+    storm: null,
+    nextStormScore: 10,
   };
 }
 
@@ -61,10 +76,11 @@ function drawCloud(
   context.restore();
 }
 
-function sprayTopY(obstacle: Obstacle, time: number) {
+function sprayTopY(obstacle: Obstacle, time: number, short = false) {
   const pulse = 0.68 + 0.32 * (0.5 + 0.5 * Math.sin(time * 5.5 + obstacle.x * 0.02));
   const blowY = FLOOR_Y - 52;
-  return blowY - (blowY - obstacle.sprayTop) * pulse;
+  const top = blowY - (blowY - obstacle.sprayTop) * pulse;
+  return short ? Math.max(top, FLOOR_Y - 95) : top;
 }
 
 function drawWhale(context: CanvasRenderingContext2D, x: number) {
@@ -107,10 +123,11 @@ function drawSpout(
   context: CanvasRenderingContext2D,
   obstacle: Obstacle,
   time: number,
+  short = false,
 ) {
   const blowX = obstacle.x + BLOWHOLE_X;
   const blowY = FLOOR_Y - 50;
-  const top = sprayTopY(obstacle, time);
+  const top = sprayTopY(obstacle, time, short);
   const wobble = Math.sin(time * 9 + obstacle.x) * 5;
 
   const stream = context.createLinearGradient(blowX, blowY, blowX, top);
@@ -135,6 +152,71 @@ function drawSpout(
     context.arc(dropX, dropY, 2 + (1 - cycle) * 1.6, 0, Math.PI * 2);
     context.fill();
   }
+}
+
+function drawStorm(context: CanvasRenderingContext2D, storm: Storm) {
+  const isWarning = storm.phase === "warning";
+  const isStrike = storm.phase === "strike";
+  const opacity = storm.phase === "fade" ? 1 - storm.elapsed / 0.38 : 1;
+  const boltX = storm.x + 55;
+
+  context.save();
+  context.globalAlpha = Math.max(0, opacity);
+  context.fillStyle = "rgba(54, 51, 91, 0.16)";
+  context.beginPath();
+  context.ellipse(storm.x, 145, 86, 13, 0, 0, Math.PI * 2);
+  context.fill();
+
+  const cloud = context.createLinearGradient(storm.x - 75, 0, storm.x + 70, 0);
+  cloud.addColorStop(0, "#56536f");
+  cloud.addColorStop(0.55, "#39384f");
+  cloud.addColorStop(1, "#625c78");
+  context.fillStyle = cloud;
+  context.beginPath();
+  context.ellipse(storm.x, 117, 69, 25, 0, 0, Math.PI * 2);
+  context.ellipse(storm.x - 39, 110, 29, 27, 0, 0, Math.PI * 2);
+  context.ellipse(storm.x - 4, 97, 39, 36, 0, 0, Math.PI * 2);
+  context.ellipse(storm.x + 36, 108, 32, 29, 0, 0, Math.PI * 2);
+  context.fill();
+
+  if (isWarning || isStrike) {
+    const flash = isStrike ? 1 : 0.3 + Math.max(0, Math.sin(storm.elapsed * 16)) * 0.34;
+    const boltPoints = [
+      [boltX + 7, 128],
+      [boltX - 10, 176],
+      [boltX + 6, 183],
+      [boltX - 13, 229],
+      [boltX + 3, 237],
+      [boltX - 12, 267],
+      [boltX + 4, STORM_BOLT_BOTTOM],
+    ];
+
+    context.globalAlpha *= flash;
+    context.strokeStyle = "#ffdd7d";
+    context.lineWidth = isStrike ? 12 : 8;
+    context.lineJoin = "round";
+    context.lineCap = "round";
+    context.shadowColor = "#fff1af";
+    context.shadowBlur = isStrike ? 18 : 10;
+    context.beginPath();
+    context.moveTo(boltPoints[0][0], boltPoints[0][1]);
+    for (const [x, y] of boltPoints.slice(1)) {
+      context.lineTo(x, y);
+    }
+    context.stroke();
+
+    context.shadowBlur = 0;
+    context.strokeStyle = "#fffdf1";
+    context.lineWidth = isStrike ? 4.5 : 2.5;
+    context.beginPath();
+    context.moveTo(boltPoints[0][0], boltPoints[0][1]);
+    for (const [x, y] of boltPoints.slice(1)) {
+      context.lineTo(x, y);
+    }
+    context.stroke();
+
+  }
+  context.restore();
 }
 
 function drawDragon(
@@ -303,7 +385,11 @@ function drawWorld(
 
   for (const obstacle of world.obstacles) {
     drawWhale(context, obstacle.x);
-    drawSpout(context, obstacle, waveTime);
+    drawSpout(context, obstacle, waveTime, world.storm !== null);
+  }
+
+  if (world.storm) {
+    drawStorm(context, world.storm);
   }
 
   drawDragon(context, world.dragonY, world.velocity, world.elapsed);
@@ -316,6 +402,21 @@ function FlyingDragonGame() {
   const [phase, setPhase] = useState<GamePhase>("ready");
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(0);
+  const [canFullscreen, setCanFullscreen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenError, setFullscreenError] = useState("");
+
+  useEffect(() => {
+    const game = gameRef.current;
+    setCanFullscreen(Boolean(game?.requestFullscreen));
+
+    const syncFullscreen = () => {
+      setIsFullscreen(document.fullscreenElement === gameRef.current);
+    };
+
+    document.addEventListener("fullscreenchange", syncFullscreen);
+    return () => document.removeEventListener("fullscreenchange", syncFullscreen);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -358,7 +459,7 @@ function FlyingDragonGame() {
           }
 
           const blowX = obstacle.x + BLOWHOLE_X;
-          const sprayTop = sprayTopY(obstacle, world.elapsed);
+          const sprayTop = sprayTopY(obstacle, world.elapsed, world.storm !== null);
           const hitsSpray =
             blowX - SPRAY_HALF < DRAGON_X + DRAGON_RADIUS &&
             blowX + SPRAY_HALF > DRAGON_X - DRAGON_RADIUS &&
@@ -371,6 +472,48 @@ function FlyingDragonGame() {
             finishGame();
             break;
           }
+        }
+
+        if (world.storm) {
+          const storm = world.storm;
+          if (storm.phase === "approach") {
+            storm.x -= speed * delta;
+            if (storm.x <= STORM_TARGET_X) {
+              storm.x = STORM_TARGET_X;
+              storm.phase = "warning";
+              storm.elapsed = 0;
+            }
+          } else if (storm.phase === "warning") {
+            storm.elapsed += delta;
+            if (storm.elapsed >= STORM_WARNING_SECONDS) {
+              storm.phase = "strike";
+              storm.elapsed = 0;
+            }
+          } else if (storm.phase === "strike") {
+            storm.elapsed += delta;
+            const boltX = storm.x + 55;
+            const hitsLightning =
+              storm.elapsed <= STORM_DANGER_SECONDS &&
+              Math.abs(DRAGON_X - boltX) < DRAGON_RADIUS + 5 &&
+              world.dragonY + DRAGON_RADIUS > STORM_BOLT_TOP &&
+              world.dragonY - DRAGON_RADIUS < STORM_BOLT_BOTTOM;
+            if (hitsLightning) {
+              finishGame();
+            } else if (storm.elapsed >= 0.32) {
+              storm.phase = "fade";
+              storm.elapsed = 0;
+            }
+          } else {
+            storm.elapsed += delta;
+            if (storm.elapsed >= 0.38) {
+              world.storm = null;
+            }
+          }
+        }
+
+        if (!world.storm && world.score >= world.nextStormScore) {
+          world.storm = { x: WIDTH + 90, phase: "approach", elapsed: 0 };
+          world.nextStormScore = world.score + 6;
         }
 
         if (world.dragonY - DRAGON_RADIUS < 12 || world.dragonY + DRAGON_RADIUS > FLOOR_Y) {
@@ -411,6 +554,22 @@ function FlyingDragonGame() {
     world.velocity = -470;
   };
 
+  const toggleFullscreen = async () => {
+    const game = gameRef.current;
+    if (!game?.requestFullscreen) return;
+
+    try {
+      if (document.fullscreenElement === game) {
+        await document.exitFullscreen();
+      } else {
+        await game.requestFullscreen();
+      }
+      setFullscreenError("");
+    } catch {
+      setFullscreenError("Fullscreen is unavailable. Turn your phone sideways for a wider view.");
+    }
+  };
+
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.code !== "Space" && event.code !== "ArrowUp") return;
     event.preventDefault();
@@ -429,38 +588,58 @@ function FlyingDragonGame() {
       tabIndex={0}
       onKeyDown={handleKeyDown}
       onPointerDown={flap}
-      aria-label="Flying Dragon game. Press Space, Arrow Up, or tap to fly over the whale spray."
+      aria-label="Flying Dragon game. Press Space, Arrow Up, or tap to fly over whale spray and avoid lightning after 10 points."
     >
-      <canvas
-        className="dragon-game-canvas"
-        ref={canvasRef}
-        aria-label="A little purple dragon flying over whales that spray water."
-      />
-      <div className="game-hud" aria-live="polite">
-        <span className="game-hud-label">SKY SCORE</span>
-        <strong>{score}</strong>
-        <span className="game-best">BEST {bestScore}</span>
-      </div>
-      {phase !== "playing" && (
-        <div className="game-overlay">
-          <div className="game-prompt">
-            <span className="game-prompt-sparkle" aria-hidden="true">✦</span>
-            <p className="game-prompt-eyebrow">
-              {phase === "ready" ? "A LITTLE ADVENTURE" : "ONE MORE FLIGHT?"}
-            </p>
-            <h4>{phase === "ready" ? "Ready, little dragon?" : "The sky is still yours."}</h4>
-            <p className="game-prompt-copy">
-              {phase === "ready"
-                ? "Fly over the water the whales spray."
-                : `You flew past ${score} ${score === 1 ? "whale" : "whales"}. Give it another go!`}
-            </p>
-            <button className="button button-primary game-start" onClick={startGame}>
-              {phase === "ready" ? "Let’s fly" : "Fly again"} <span aria-hidden="true">→</span>
-            </button>
-            <p className="game-controls">SPACE · ↑ · TAP TO FLAP</p>
-          </div>
+      <div className="dragon-game-screen">
+        <canvas
+          className="dragon-game-canvas"
+          ref={canvasRef}
+          aria-label="A little purple dragon flying over whales, with lightning storms after 10 points."
+        />
+        <div className="game-hud" aria-live="polite">
+          <span className="game-hud-label">SKY SCORE</span>
+          <strong>{score}</strong>
+          <span className="game-best">BEST {bestScore}</span>
         </div>
-      )}
+        {canFullscreen && (
+          <button
+            className="game-fullscreen-button"
+            type="button"
+            aria-label={isFullscreen ? "Exit fullscreen" : "Play fullscreen"}
+            title={isFullscreen ? "Exit fullscreen" : "Play fullscreen"}
+            onPointerDown={(event) => event.stopPropagation()}
+            onKeyDown={(event) => event.stopPropagation()}
+            onClick={toggleFullscreen}
+          >
+            {isFullscreen ? "×" : "⛶"}
+          </button>
+        )}
+        {fullscreenError && <p className="game-fullscreen-error" role="alert">{fullscreenError}</p>}
+        {phase !== "playing" && (
+          <div className="game-overlay">
+            <div className="game-prompt">
+              <span className="game-prompt-sparkle" aria-hidden="true">✦</span>
+              <p className="game-prompt-eyebrow">
+                {phase === "ready" ? "A LITTLE ADVENTURE" : "ONE MORE FLIGHT?"}
+              </p>
+              <h4>{phase === "ready" ? "Ready, little dragon?" : "The sky is still yours."}</h4>
+              <p className="game-prompt-copy">
+                {phase === "ready"
+                  ? "Storm at 10! Fly low to dodge the lightning."
+                  : `You flew past ${score} ${score === 1 ? "whale" : "whales"}. Give it another go!`}
+              </p>
+              <button className="button button-primary game-start" onClick={startGame}>
+                {phase === "ready" ? "Let’s fly" : "Fly again"} <span aria-hidden="true">→</span>
+              </button>
+              <p className="game-controls">
+                <span className="game-keyboard-hint">SPACE · ↑</span>
+                <span className="game-tap-hint">TAP ANYWHERE TO FLAP</span>
+              </p>
+              <p className="game-rotate-hint">Turn your phone sideways for the best view.</p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

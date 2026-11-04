@@ -346,6 +346,7 @@ h3 {
   grid-template-columns: 1fr;
   gap: 0;
   padding: 18px;
+  scroll-margin-top: 16px;
 }
 
 .game-feature-info {
@@ -382,7 +383,14 @@ h3 {
   background: #f5b38f;
   overflow: hidden;
   cursor: pointer;
-  touch-action: manipulation;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.dragon-game-screen {
+  position: absolute;
+  inset: 0;
 }
 
 .dragon-game:focus-visible {
@@ -411,6 +419,46 @@ h3 {
   border-radius: 8px;
   transform: translateX(-50%);
   pointer-events: none;
+}
+
+.game-fullscreen-button {
+  width: 40px;
+  height: 40px;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: #fff7e8;
+  background: rgba(43, 38, 73, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 23px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.game-fullscreen-button:focus-visible,
+.game-start:focus-visible {
+  outline: 2px solid #fff7e8;
+  outline-offset: 3px;
+}
+
+.game-fullscreen-error {
+  position: absolute;
+  top: 57px;
+  right: 12px;
+  z-index: 3;
+  max-width: 230px;
+  margin: 0;
+  padding: 8px 10px;
+  color: #fff7e8;
+  background: rgba(43, 38, 73, 0.9);
+  border-radius: 7px;
+  font-size: 10px;
+  line-height: 1.5;
 }
 
 .game-hud-label,
@@ -503,11 +551,53 @@ h3 {
 }
 
 .game-controls {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
   margin: 13px 0 0;
   color: #9c97ad;
   font-size: 7px;
   font-weight: 700;
   letter-spacing: 1.15px;
+}
+
+.game-rotate-hint,
+.game-tap-hint {
+  display: none;
+}
+
+.dragon-game:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-width: none;
+  aspect-ratio: auto;
+  border-radius: 0;
+  background: #11121b;
+}
+
+.dragon-game:fullscreen .game-prompt {
+  width: min(100%, 430px);
+  padding: 30px 34px 24px;
+}
+
+.dragon-game:fullscreen .game-prompt h4 {
+  font-size: clamp(24px, 4vw, 34px);
+}
+
+.dragon-game:fullscreen .game-prompt-copy {
+  font-size: 14px;
+}
+
+.dragon-game:fullscreen .game-controls {
+  font-size: 10px;
+}
+
+.dragon-game:fullscreen .game-rotate-hint {
+  display: block;
+  margin: 11px 0 0;
+  color: #c1bdca;
+  font-size: 10px;
 }
 
 .game-info {
@@ -737,7 +827,10 @@ h3 {
   }
 
   .site-header nav .nav-cta {
-    padding: 9px 11px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 11px;
   }
 
   .hero {
@@ -879,12 +972,19 @@ h3 {
   }
 
   .site-header nav {
-    gap: 11px;
-    font-size: 9px;
+    gap: 8px;
+    font-size: 10px;
+  }
+
+  .site-header nav a {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
   }
 
   .site-header nav .nav-cta {
-    padding: 8px 9px;
+    min-height: 40px;
+    padding: 0 9px;
   }
 
   .hero {
@@ -939,11 +1039,48 @@ h3 {
   }
 
   .game-prompt {
-    padding: 18px 17px 14px;
+    padding: 10px 14px 8px;
+  }
+
+  .game-overlay {
+    padding: 4px;
   }
 
   .game-prompt-copy {
     max-width: 220px;
+    margin-bottom: 8px;
+    font-size: 9px;
+    line-height: 1.4;
+  }
+
+  .game-prompt-eyebrow {
+    margin-bottom: 4px;
+    font-size: 6px;
+  }
+
+  .game-prompt h4 {
+    margin-bottom: 4px;
+    font-size: 18px;
+  }
+
+  .game-start {
+    min-height: 44px;
+  }
+
+  .game-controls {
+    margin-top: 6px;
+  }
+
+  .game-fullscreen-button {
+    width: 44px;
+    height: 44px;
+    top: 8px;
+    right: 8px;
+  }
+
+  .dragon-game:fullscreen .game-prompt {
+    width: min(100%, 430px);
+    padding: 22px 28px 18px;
   }
 
   .game-hud {
@@ -1016,5 +1153,51 @@ h3 {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .game-keyboard-hint {
+    display: none;
+  }
+
+  .game-tap-hint {
+    display: inline;
+  }
+
+  .dragon-game:fullscreen .dragon-game-screen {
+    width: min(100vw, calc(100dvh * 16 / 9));
+    height: auto;
+    aspect-ratio: 16 / 9;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .dragon-game:fullscreen .game-rotate-hint {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .game-keyboard-hint {
+    display: none;
+  }
+
+  .game-tap-hint {
+    display: inline;
+  }
+}
+
+@media (max-width: 900px) and (orientation: portrait) {
+  .dragon-game:fullscreen .dragon-game-screen {
+    width: min(100dvh, calc(100vw * 16 / 9));
+    height: auto;
+    aspect-ratio: 16 / 9;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(90deg);
   }
 }
