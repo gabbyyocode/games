@@ -2140,6 +2140,16 @@ h3 {
   font-size: 9px;
 }
 
+.footer-counter {
+  margin: 0;
+  padding: 6px 9px;
+  color: #737180;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 999px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
 .footer-top {
   font-size: 9px;
 }
@@ -2340,6 +2350,9 @@ h3 {
 
   .site-footer {
     min-height: 68px;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 0;
   }
 }
 

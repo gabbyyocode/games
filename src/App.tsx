@@ -1,4 +1,4 @@
-import { useEffect, useId } from "react";
+import { useEffect, useId, useState } from "react";
 import "./App.css";
 import FlyingDragonGame from "./FlyingDragonGame";
 import MathicDriverGame from "./MathicDriverGame";
@@ -71,6 +71,7 @@ function App() {
   const isDragonPage = game === "flying-dragon";
   const isMathicPage = game === "mathic-driver";
   const isGamePage = isDragonPage || isMathicPage;
+  const [visitCount, setVisitCount] = useState<string | null>(null);
 
   useEffect(() => {
     if (isDragonPage) {
@@ -81,6 +82,32 @@ function App() {
       document.title = "Gabby Yo Games — Little worlds, big adventures";
     }
   }, [isDragonPage, isMathicPage]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch("https://gabbyyocode.goatcounter.com/counter/TOTAL.json")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`GoatCounter returned ${response.status}`);
+        }
+        return response.json() as Promise<{ count: string }>;
+      })
+      .then(({ count }) => {
+        if (!cancelled) {
+          setVisitCount(count);
+        }
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          console.error("Failed to load the GoatCounter visitor total.", error);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <div className="site-shell">
@@ -215,6 +242,7 @@ function App() {
           <span>gabby yo <strong>games</strong></span>
         </a>
         <p>Made with a little magic <span aria-hidden="true">♥</span> © 2026 Gabby Yo Games</p>
+        {visitCount !== null && <p className="footer-counter">Site visits: {visitCount}</p>}
         <a className="footer-top" href={isGamePage ? `${homePath}#games` : "#top"}>{isGamePage ? "All games ↑" : "Back to top ↑"}</a>
       </footer>
     </div>
