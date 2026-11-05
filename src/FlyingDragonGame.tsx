@@ -23,6 +23,8 @@ type Obstacle = {
 
 type GamePhase = "ready" | "playing" | "over";
 type ThemeId = "sky" | "volcano" | "forest" | "ice" | "desert" | "night";
+type DragonSkinId = "classic" | "ember" | "moss" | "frost" | "royal";
+type DragonAccessory = "flame" | "leaves" | "ice" | "crown" | "none";
 
 type WorldTheme = {
   id: ThemeId;
@@ -36,6 +38,160 @@ type WorldTheme = {
   sea: [string, string];
   cloud: string;
 };
+
+type DragonSkin = {
+  id: DragonSkinId;
+  name: string;
+  icon: string;
+  cost: number;
+  preview: string;
+  body: string;
+  bodyDark: string;
+  wing: string;
+  wingLine: string;
+  belly: string;
+  snout: string;
+  horn: string;
+  accent: string;
+  accessory: DragonAccessory;
+};
+
+type DragonCollection = {
+  tokens: number;
+  unlockedSkinIds: DragonSkinId[];
+  equippedSkinId: DragonSkinId;
+};
+
+const DRAGON_COLLECTION_KEY = "flyingDragonCollection";
+
+const DRAGON_SKINS: DragonSkin[] = [
+  {
+    id: "classic",
+    name: "Classic",
+    icon: "🐉",
+    cost: 0,
+    preview: "#8279dc",
+    body: "#756bd0",
+    bodyDark: "#5c51a7",
+    wing: "#8e83e0",
+    wingLine: "rgba(219, 211, 255, 0.68)",
+    belly: "#f0b77e",
+    snout: "#a29bed",
+    horn: "#f0d091",
+    accent: "#f3b982",
+    accessory: "none",
+  },
+  {
+    id: "ember",
+    name: "Ember",
+    icon: "🔥",
+    cost: 1,
+    preview: "#e95c43",
+    body: "#e95c43",
+    bodyDark: "#a63d47",
+    wing: "#ff9b4a",
+    wingLine: "rgba(255, 225, 160, 0.82)",
+    belly: "#ffd078",
+    snout: "#ffb65c",
+    horn: "#ffe28a",
+    accent: "#ffce62",
+    accessory: "flame",
+  },
+  {
+    id: "moss",
+    name: "Moss",
+    icon: "🍃",
+    cost: 2,
+    preview: "#55a875",
+    body: "#55a875",
+    bodyDark: "#347455",
+    wing: "#8bcf83",
+    wingLine: "rgba(224, 255, 186, 0.8)",
+    belly: "#e9c77d",
+    snout: "#94cf7d",
+    horn: "#e8d18c",
+    accent: "#b9e889",
+    accessory: "leaves",
+  },
+  {
+    id: "frost",
+    name: "Frost",
+    icon: "❄",
+    cost: 3,
+    preview: "#55b9d1",
+    body: "#55b9d1",
+    bodyDark: "#347eaa",
+    wing: "#91e1ec",
+    wingLine: "rgba(235, 255, 255, 0.86)",
+    belly: "#e8fbff",
+    snout: "#a6eff2",
+    horn: "#e7ffff",
+    accent: "#a6edff",
+    accessory: "ice",
+  },
+  {
+    id: "royal",
+    name: "Royal",
+    icon: "👑",
+    cost: 4,
+    preview: "#ac62ce",
+    body: "#ac62ce",
+    bodyDark: "#713d9c",
+    wing: "#d18cea",
+    wingLine: "rgba(255, 222, 255, 0.84)",
+    belly: "#f1d27d",
+    snout: "#d69be9",
+    horn: "#f5d875",
+    accent: "#ffe78b",
+    accessory: "crown",
+  },
+];
+
+const DEFAULT_DRAGON_COLLECTION: DragonCollection = {
+  tokens: 0,
+  unlockedSkinIds: ["classic"],
+  equippedSkinId: "classic",
+};
+
+function isDragonSkinId(value: unknown): value is DragonSkinId {
+  return DRAGON_SKINS.some((skin) => skin.id === value);
+}
+
+function loadDragonCollection(): DragonCollection {
+  try {
+    const stored = localStorage.getItem(DRAGON_COLLECTION_KEY);
+    if (!stored) return DEFAULT_DRAGON_COLLECTION;
+
+    const parsed: unknown = JSON.parse(stored);
+    if (!parsed || typeof parsed !== "object") {
+      throw new Error("Saved dragon collection is not an object.");
+    }
+
+    const collection = parsed as Record<string, unknown>;
+    if (
+      typeof collection.tokens !== "number" ||
+      !Number.isSafeInteger(collection.tokens) ||
+      collection.tokens < 0 ||
+      !Array.isArray(collection.unlockedSkinIds) ||
+      !collection.unlockedSkinIds.every(isDragonSkinId) ||
+      !isDragonSkinId(collection.equippedSkinId)
+    ) {
+      throw new Error("Saved dragon collection has an invalid shape.");
+    }
+
+    const unlockedSkinIds = Array.from(
+      new Set<DragonSkinId>(["classic", ...collection.unlockedSkinIds]),
+    );
+    const equippedSkinId = unlockedSkinIds.includes(collection.equippedSkinId)
+      ? collection.equippedSkinId
+      : "classic";
+
+    return { tokens: collection.tokens, unlockedSkinIds, equippedSkinId };
+  } catch (error) {
+    console.error("Could not load the saved Flying Dragon collection.", error);
+    return DEFAULT_DRAGON_COLLECTION;
+  }
+}
 
 const WORLD_THEMES: WorldTheme[] = [
   {
@@ -127,6 +283,7 @@ type GameWorld = {
   elapsed: number;
   storm: Storm | null;
   nextStormScore: number;
+  nextTokenScore: number;
 };
 
 function makeWorld(phase: GamePhase = "ready"): GameWorld {
@@ -143,6 +300,7 @@ function makeWorld(phase: GamePhase = "ready"): GameWorld {
     elapsed: 0,
     storm: null,
     nextStormScore: 10,
+    nextTokenScore: 10,
   };
 }
 
@@ -314,6 +472,7 @@ function drawDragon(
   y: number,
   velocity: number,
   elapsed: number,
+  skin: DragonSkin,
 ) {
   const tilt = Math.max(-0.42, Math.min(0.48, velocity / 1150));
   const wingBeat = Math.sin(elapsed * 10) * 0.24;
@@ -326,13 +485,13 @@ function drawDragon(
   context.ellipse(-1, 24, 31, 8, 0, 0, Math.PI * 2);
   context.fill();
 
-  context.fillStyle = "#5c51a7";
+  context.fillStyle = skin.bodyDark;
   context.beginPath();
   context.moveTo(-15, 8);
   context.quadraticCurveTo(-43, 21, -48, 7);
   context.quadraticCurveTo(-30, 18, -21, -2);
   context.fill();
-  context.fillStyle = "#f3b982";
+  context.fillStyle = skin.accent;
   context.beginPath();
   context.arc(-48, 7, 4, 0, Math.PI * 2);
   context.fill();
@@ -340,14 +499,14 @@ function drawDragon(
   context.save();
   context.translate(-5, -8);
   context.rotate(wingBeat);
-  context.fillStyle = "#8e83e0";
+  context.fillStyle = skin.wing;
   context.beginPath();
   context.moveTo(1, 4);
   context.quadraticCurveTo(-2, -40, -34, -42);
   context.quadraticCurveTo(-29, -17, -15, 7);
   context.closePath();
   context.fill();
-  context.strokeStyle = "rgba(219, 211, 255, 0.68)";
+  context.strokeStyle = skin.wingLine;
   context.lineWidth = 2;
   context.beginPath();
   context.moveTo(-5, 1);
@@ -357,16 +516,16 @@ function drawDragon(
   context.stroke();
   context.restore();
 
-  context.fillStyle = "#756bd0";
+  context.fillStyle = skin.body;
   context.beginPath();
   context.ellipse(-3, 3, 27, 19, -0.08, 0, Math.PI * 2);
   context.fill();
-  context.fillStyle = "#f0b77e";
+  context.fillStyle = skin.belly;
   context.beginPath();
   context.ellipse(-2, 14, 14, 6, 0, 0, Math.PI * 2);
   context.fill();
 
-  context.strokeStyle = "#574e9e";
+  context.strokeStyle = skin.bodyDark;
   context.lineWidth = 5;
   context.lineCap = "round";
   context.beginPath();
@@ -376,16 +535,16 @@ function drawDragon(
   context.lineTo(3, 24);
   context.stroke();
 
-  context.fillStyle = "#8279dc";
+  context.fillStyle = skin.body;
   context.beginPath();
   context.ellipse(18, -6, 19, 16, 0.08, 0, Math.PI * 2);
   context.fill();
-  context.fillStyle = "#a29bed";
+  context.fillStyle = skin.snout;
   context.beginPath();
   context.ellipse(31, 1, 12, 8, 0.08, 0, Math.PI * 2);
   context.fill();
 
-  context.fillStyle = "#f0d091";
+  context.fillStyle = skin.horn;
   context.beginPath();
   context.moveTo(8, -18);
   context.lineTo(5, -30);
@@ -395,6 +554,50 @@ function drawDragon(
   context.quadraticCurveTo(30, -23, 27, -15);
   context.fill();
 
+  if (skin.accessory === "flame") {
+    context.fillStyle = skin.accent;
+    context.beginPath();
+    context.moveTo(-2, -15);
+    context.lineTo(3, -26);
+    context.lineTo(8, -16);
+    context.lineTo(13, -28);
+    context.lineTo(18, -15);
+    context.closePath();
+    context.fill();
+  } else if (skin.accessory === "leaves") {
+    context.fillStyle = skin.accent;
+    for (const [x, y] of [[-19, -6], [-8, -10], [3, -11]]) {
+      context.beginPath();
+      context.ellipse(x, y, 4, 8, -0.65, 0, Math.PI * 2);
+      context.fill();
+    }
+  } else if (skin.accessory === "ice") {
+    context.fillStyle = skin.accent;
+    context.beginPath();
+    context.moveTo(-17, -10);
+    context.lineTo(-13, -20);
+    context.lineTo(-8, -10);
+    context.lineTo(-2, -23);
+    context.lineTo(4, -10);
+    context.lineTo(10, -20);
+    context.lineTo(15, -8);
+    context.closePath();
+    context.fill();
+  } else if (skin.accessory === "crown") {
+    context.fillStyle = skin.accent;
+    context.beginPath();
+    context.moveTo(11, -21);
+    context.lineTo(10, -31);
+    context.lineTo(17, -25);
+    context.lineTo(22, -35);
+    context.lineTo(27, -25);
+    context.lineTo(34, -31);
+    context.lineTo(32, -19);
+    context.closePath();
+    context.fill();
+    context.fillRect(12, -20, 20, 3);
+  }
+
   context.fillStyle = "#29253e";
   context.beginPath();
   context.arc(22, -9, 3, 0, Math.PI * 2);
@@ -403,7 +606,7 @@ function drawDragon(
   context.beginPath();
   context.arc(23, -10, 1, 0, Math.PI * 2);
   context.fill();
-  context.fillStyle = "#554b9c";
+  context.fillStyle = skin.bodyDark;
   context.beginPath();
   context.arc(35, -1, 1.5, 0, Math.PI * 2);
   context.fill();
@@ -415,6 +618,7 @@ function drawWorld(
   world: GameWorld,
   timestamp: number,
   theme: WorldTheme,
+  dragonSkin: DragonSkin,
 ) {
   const sky = context.createLinearGradient(0, 0, 0, HEIGHT);
   sky.addColorStop(0, theme.sky[0]);
@@ -574,7 +778,7 @@ function drawWorld(
     drawStorm(context, world.storm);
   }
 
-  drawDragon(context, world.dragonY, world.velocity, world.elapsed);
+  drawDragon(context, world.dragonY, world.velocity, world.elapsed, dragonSkin);
 }
 
 function FlyingDragonGame() {
@@ -584,11 +788,58 @@ function FlyingDragonGame() {
   const [phase, setPhase] = useState<GamePhase>("ready");
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(0);
+  const [collection, setCollection] = useState(loadDragonCollection);
+  const [shopOpen, setShopOpen] = useState(false);
+  const [tokenNotice, setTokenNotice] = useState("");
   const [selectedTheme, setSelectedTheme] = useState<ThemeId>("sky");
   const selectedThemeRef = useRef(WORLD_THEMES[0]);
+  const equippedSkinRef = useRef(DRAGON_SKINS[0]);
+  const tokenNoticeTimerRef = useRef<number | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isFallbackFullscreen, setIsFallbackFullscreen] = useState(false);
   const autoFullscreenAttempted = useRef(false);
+
+  useEffect(() => {
+    equippedSkinRef.current =
+      DRAGON_SKINS.find((skin) => skin.id === collection.equippedSkinId) ?? DRAGON_SKINS[0];
+    try {
+      localStorage.setItem(DRAGON_COLLECTION_KEY, JSON.stringify(collection));
+    } catch (error) {
+      console.error("Could not save the Flying Dragon collection.", error);
+    }
+  }, [collection]);
+
+  useEffect(
+    () => () => {
+      if (tokenNoticeTimerRef.current !== null) {
+        window.clearTimeout(tokenNoticeTimerRef.current);
+      }
+    },
+    [],
+  );
+
+  const awardDragonToken = () => {
+    setCollection((current) => ({ ...current, tokens: current.tokens + 1 }));
+    setTokenNotice("+1 Dragon token!");
+    if (tokenNoticeTimerRef.current !== null) {
+      window.clearTimeout(tokenNoticeTimerRef.current);
+    }
+    tokenNoticeTimerRef.current = window.setTimeout(() => setTokenNotice(""), 2200);
+  };
+
+  const selectOrBuySkin = (skin: DragonSkin) => {
+    setCollection((current) => {
+      if (current.unlockedSkinIds.includes(skin.id)) {
+        return { ...current, equippedSkinId: skin.id };
+      }
+      if (current.tokens < skin.cost) return current;
+      return {
+        tokens: current.tokens - skin.cost,
+        unlockedSkinIds: [...current.unlockedSkinIds, skin.id],
+        equippedSkinId: skin.id,
+      };
+    });
+  };
 
   useEffect(() => {
     const syncFullscreen = () => {
@@ -657,6 +908,10 @@ function FlyingDragonGame() {
             obstacle.passed = true;
             world.score += 1;
             setScore(world.score);
+            while (world.score >= world.nextTokenScore) {
+              world.nextTokenScore += 10;
+              awardDragonToken();
+            }
           }
 
           const blowX = obstacle.x + BLOWHOLE_X;
@@ -733,7 +988,13 @@ function FlyingDragonGame() {
         }
       }
 
-      drawWorld(context, world, timestamp, selectedThemeRef.current);
+      drawWorld(
+        context,
+        world,
+        timestamp,
+        selectedThemeRef.current,
+        equippedSkinRef.current,
+      );
       frameId = window.requestAnimationFrame(animate);
     };
 
@@ -802,6 +1063,9 @@ function FlyingDragonGame() {
     }
   };
 
+  const equippedSkin =
+    DRAGON_SKINS.find((skin) => skin.id === collection.equippedSkinId) ?? DRAGON_SKINS[0];
+
   return (
     <div
       className={`dragon-game${isFallbackFullscreen ? " is-fullscreen" : ""}`}
@@ -816,13 +1080,21 @@ function FlyingDragonGame() {
         <canvas
           className="dragon-game-canvas"
           ref={canvasRef}
-          aria-label="A little purple dragon flying over whales, with lightning storms after 10 points."
+          aria-label={`A ${equippedSkin.name.toLowerCase()} dragon flying over whales, with lightning storms after 10 points.`}
         />
         <div className="game-hud" aria-live="polite">
           <span className="game-hud-label">SKY SCORE</span>
           <strong>{score}</strong>
           <span className="game-best">BEST {bestScore}</span>
+          <span className="game-token-count" aria-label={`${collection.tokens} dragon tokens`}>
+            🐉 {collection.tokens}
+          </span>
         </div>
+        {tokenNotice && (
+          <div className="dragon-token-notice" role="status">
+            {tokenNotice}
+          </div>
+        )}
         <button
           className="game-fullscreen-button"
           type="button"
@@ -839,41 +1111,115 @@ function FlyingDragonGame() {
             <div className="game-prompt">
               <span className="game-prompt-sparkle" aria-hidden="true">✦</span>
               <p className="game-prompt-eyebrow">
-                {phase === "ready" ? "A LITTLE ADVENTURE" : "ONE MORE FLIGHT?"}
+                {shopOpen ? "DRAGON COLLECTION" : phase === "ready" ? "A LITTLE ADVENTURE" : "ONE MORE FLIGHT?"}
               </p>
-              <h4>{phase === "ready" ? "Ready, little dragon?" : "The sky is still yours."}</h4>
-              <p className="game-prompt-copy">
-                {phase === "ready"
-                  ? "Choose a world, then fly low to dodge the storm at 10."
-                  : `You flew past ${score} ${score === 1 ? "whale" : "whales"}. Give it another go!`}
-              </p>
-              <div className="dragon-theme-picker" role="group" aria-label="Choose a flying world">
-                {WORLD_THEMES.map((theme) => (
+              <h4>
+                {shopOpen
+                  ? "Spend your dragon tokens"
+                  : phase === "ready"
+                    ? "Ready, little dragon?"
+                    : "The sky is still yours."}
+              </h4>
+              {shopOpen ? (
+                <>
+                  <p className="dragon-shop-balance">
+                    🐉 {collection.tokens} {collection.tokens === 1 ? "token" : "tokens"}
+                  </p>
+                  <div className="dragon-shop-list" role="group" aria-label="Dragon skins">
+                    {DRAGON_SKINS.map((skin) => {
+                      const unlocked = collection.unlockedSkinIds.includes(skin.id);
+                      const equipped = collection.equippedSkinId === skin.id;
+                      return (
+                        <button
+                          key={skin.id}
+                          type="button"
+                          className={`dragon-shop-skin${equipped ? " is-equipped" : ""}`}
+                          aria-label={
+                            equipped
+                              ? `${skin.name}, equipped`
+                              : unlocked
+                                ? `Equip ${skin.name} dragon skin`
+                                : `Buy ${skin.name} dragon skin for ${skin.cost} tokens`
+                          }
+                          aria-pressed={equipped}
+                          disabled={!unlocked && collection.tokens < skin.cost}
+                          onPointerDown={(event) => event.stopPropagation()}
+                          onKeyDown={(event) => event.stopPropagation()}
+                          onClick={() => selectOrBuySkin(skin)}
+                        >
+                          <span
+                            className="dragon-shop-swatch"
+                            style={{ backgroundColor: skin.preview }}
+                            aria-hidden="true"
+                          />
+                          <span className="dragon-shop-name">
+                            <strong>{skin.icon} {skin.name}</strong>
+                            <small>{unlocked ? "Owned" : `${skin.cost} ${skin.cost === 1 ? "token" : "tokens"}`}</small>
+                          </span>
+                          <span className="dragon-shop-action">
+                            {equipped ? "Equipped" : unlocked ? "Equip" : "Buy"}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                   <button
-                    key={theme.id}
+                    className="dragon-shop-back"
                     type="button"
-                    aria-label={`Choose ${theme.name} world`}
-                    aria-pressed={selectedTheme === theme.id}
-                    className={selectedTheme === theme.id ? "is-selected" : ""}
                     onPointerDown={(event) => event.stopPropagation()}
                     onKeyDown={(event) => event.stopPropagation()}
-                    onClick={() => {
-                      selectedThemeRef.current = theme;
-                      setSelectedTheme(theme.id);
-                    }}
+                    onClick={() => setShopOpen(false)}
                   >
-                    <span aria-hidden="true">{theme.icon}</span>
-                    {theme.name}
+                    ← Back to flight
                   </button>
-                ))}
-              </div>
-              <button className="button button-primary game-start" onClick={startGame}>
-                {phase === "ready" ? "Let’s fly" : "Fly again"} <span aria-hidden="true">→</span>
-              </button>
-              <p className="game-controls">
-                <span className="game-keyboard-hint">SPACE · ↑</span>
-                <span className="game-tap-hint">TAP ANYWHERE TO FLAP</span>
-              </p>
+                </>
+              ) : (
+                <>
+                  <p className="game-prompt-copy">
+                    {phase === "ready"
+                      ? "Dodge the storm at 10. Earn a token every 10 points!"
+                      : `You flew past ${score} ${score === 1 ? "whale" : "whales"}. Every 10 points earns a dragon token!`}
+                  </p>
+                  <div className="dragon-theme-picker" role="group" aria-label="Choose a flying world">
+                    {WORLD_THEMES.map((theme) => (
+                      <button
+                        key={theme.id}
+                        type="button"
+                        aria-label={`Choose ${theme.name} world`}
+                        aria-pressed={selectedTheme === theme.id}
+                        className={selectedTheme === theme.id ? "is-selected" : ""}
+                        onPointerDown={(event) => event.stopPropagation()}
+                        onKeyDown={(event) => event.stopPropagation()}
+                        onClick={() => {
+                          selectedThemeRef.current = theme;
+                          setSelectedTheme(theme.id);
+                        }}
+                      >
+                        <span aria-hidden="true">{theme.icon}</span>
+                        {theme.name}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    className="dragon-shop-open"
+                    type="button"
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onKeyDown={(event) => event.stopPropagation()}
+                    onClick={() => setShopOpen(true)}
+                  >
+                    🐉 Dragon skins <span>{collection.tokens} tokens</span>
+                  </button>
+                  <button className="button button-primary game-start" onClick={startGame}>
+                    {phase === "ready" ? "Let’s fly" : "Fly again"} <span aria-hidden="true">→</span>
+                  </button>
+                </>
+              )}
+              {!shopOpen && (
+                <p className="game-controls">
+                  <span className="game-keyboard-hint">SPACE · ↑</span>
+                  <span className="game-tap-hint">TAP ANYWHERE TO FLAP</span>
+                </p>
+              )}
               <p className="game-rotate-hint">Turn your phone sideways for the best view.</p>
             </div>
           </div>
