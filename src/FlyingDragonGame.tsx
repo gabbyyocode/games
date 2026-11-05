@@ -1353,6 +1353,7 @@ function FlyingDragonGame() {
   const [bestScore, setBestScore] = useState(0);
   const [collection, setCollection] = useState(loadDragonCollection);
   const [shopOpen, setShopOpen] = useState(false);
+  const [storeTab, setStoreTab] = useState<"backgrounds" | "skins">("backgrounds");
   const [tokenNotice, setTokenNotice] = useState("");
   const [selectedTheme, setSelectedTheme] = useState<ThemeId>("sky");
   const selectedThemeRef = useRef(
@@ -1649,6 +1650,24 @@ function FlyingDragonGame() {
     }
   };
 
+  const handleStoreTabKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const tabs = ["backgrounds", "skins"] as const;
+    const currentIndex = tabs.indexOf(storeTab);
+    let nextIndex = currentIndex;
+
+    if (event.key === "ArrowRight") nextIndex = (currentIndex + 1) % tabs.length;
+    else if (event.key === "ArrowLeft") nextIndex = (currentIndex + tabs.length - 1) % tabs.length;
+    else if (event.key === "Home") nextIndex = 0;
+    else if (event.key === "End") nextIndex = tabs.length - 1;
+    else return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    const nextTab = tabs[nextIndex];
+    setStoreTab(nextTab);
+    document.getElementById(`dragon-store-tab-${nextTab}`)?.focus();
+  };
+
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.code !== "Space" && event.code !== "ArrowUp") return;
     event.preventDefault();
@@ -1721,53 +1740,131 @@ function FlyingDragonGame() {
                   <p className="dragon-shop-balance">
                     🐉 {collection.tokens} {collection.tokens === 1 ? "token" : "tokens"}
                   </p>
-                  <div className="dragon-shop-list" aria-label="Dragon skins">
-                    {DRAGON_RARITIES.map((rarity) => {
-                      const skins = DRAGON_SKINS.filter((skin) => skin.rarity === rarity);
-                      if (skins.length === 0) return null;
+                  <div
+                    className="dragon-store-tabs"
+                    role="tablist"
+                    aria-label="Dragon store categories"
+                    onKeyDown={handleStoreTabKeyDown}
+                  >
+                    <button
+                      id="dragon-store-tab-backgrounds"
+                      type="button"
+                      role="tab"
+                      aria-selected={storeTab === "backgrounds"}
+                      aria-controls="dragon-store-panel"
+                      tabIndex={storeTab === "backgrounds" ? 0 : -1}
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onClick={() => setStoreTab("backgrounds")}
+                    >
+                      🌌 Backgrounds
+                    </button>
+                    <button
+                      id="dragon-store-tab-skins"
+                      type="button"
+                      role="tab"
+                      aria-selected={storeTab === "skins"}
+                      aria-controls="dragon-store-panel"
+                      tabIndex={storeTab === "skins" ? 0 : -1}
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onClick={() => setStoreTab("skins")}
+                    >
+                      🐉 Dragon skins
+                    </button>
+                  </div>
+                  <div
+                    className="dragon-shop-list dragon-store-panel"
+                    id="dragon-store-panel"
+                    role="tabpanel"
+                    aria-labelledby={`dragon-store-tab-${storeTab}`}
+                    tabIndex={0}
+                  >
+                    {storeTab === "backgrounds" ? (
+                      <section className="dragon-rarity dragon-world-options">
+                        {WORLD_THEMES.map((theme) => {
+                          const unlocked = collection.unlockedThemeIds.includes(theme.id);
+                          const selected = selectedTheme === theme.id;
+                          return (
+                            <button
+                              key={theme.id}
+                              type="button"
+                              className={`dragon-world-option${selected ? " is-selected" : ""}`}
+                              aria-label={
+                                selected
+                                  ? `${theme.name} background, selected`
+                                  : unlocked
+                                    ? `Choose ${theme.name} background`
+                                    : `Buy ${theme.name} background for ${theme.cost} ${theme.cost === 1 ? "token" : "tokens"}`
+                              }
+                              aria-pressed={selected}
+                              disabled={!unlocked && collection.tokens < theme.cost}
+                              onPointerDown={(event) => event.stopPropagation()}
+                              onKeyDown={(event) => event.stopPropagation()}
+                              onClick={() => selectOrBuyTheme(theme)}
+                            >
+                              <span className="dragon-world-icon" aria-hidden="true">{theme.icon}</span>
+                              <span className="dragon-shop-name">
+                                <strong>{theme.name}</strong>
+                                <small>
+                                  {unlocked
+                                    ? "Owned"
+                                    : `${theme.cost} ${theme.cost === 1 ? "token" : "tokens"}`}
+                                </small>
+                              </span>
+                              <span className="dragon-shop-action">
+                                {selected ? "Selected" : unlocked ? "Choose" : "Buy"}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </section>
+                    ) : (
+                      DRAGON_RARITIES.map((rarity) => {
+                        const skins = DRAGON_SKINS.filter((skin) => skin.rarity === rarity);
+                        if (skins.length === 0) return null;
 
-                      return (
-                        <section className={`dragon-rarity dragon-rarity-${rarity.toLowerCase()}`} key={rarity}>
-                          <h5>{rarity} Dragons</h5>
-                          {skins.map((skin) => {
-                            const unlocked = collection.unlockedSkinIds.includes(skin.id);
-                            const equipped = collection.equippedSkinId === skin.id;
-                            return (
-                              <button
-                                key={skin.id}
-                                type="button"
-                                className={`dragon-shop-skin${equipped ? " is-equipped" : ""}`}
-                                aria-label={
-                                  equipped
-                                    ? `${skin.name}, equipped`
-                                    : unlocked
-                                      ? `Equip ${skin.name} dragon skin`
-                                      : `Buy ${skin.name} dragon skin for ${skin.cost} ${skin.cost === 1 ? "token" : "tokens"}`
-                                }
-                                aria-pressed={equipped}
-                                disabled={!unlocked && collection.tokens < skin.cost}
-                                onPointerDown={(event) => event.stopPropagation()}
-                                onKeyDown={(event) => event.stopPropagation()}
-                                onClick={() => selectOrBuySkin(skin)}
-                              >
-                                <span
-                                  className="dragon-shop-swatch"
-                                  style={{ backgroundColor: skin.preview }}
-                                  aria-hidden="true"
-                                />
-                                <span className="dragon-shop-name">
-                                  <strong>{skin.icon} {skin.name}</strong>
-                                  <small>{unlocked ? "Owned" : `${skin.cost} ${skin.cost === 1 ? "token" : "tokens"}`}</small>
-                                </span>
-                                <span className="dragon-shop-action">
-                                  {equipped ? "Equipped" : unlocked ? "Equip" : "Buy"}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </section>
-                      );
-                    })}
+                        return (
+                          <section className={`dragon-rarity dragon-rarity-${rarity.toLowerCase()}`} key={rarity}>
+                            <h5>{rarity} Dragons</h5>
+                            {skins.map((skin) => {
+                              const unlocked = collection.unlockedSkinIds.includes(skin.id);
+                              const equipped = collection.equippedSkinId === skin.id;
+                              return (
+                                <button
+                                  key={skin.id}
+                                  type="button"
+                                  className={`dragon-shop-skin${equipped ? " is-equipped" : ""}`}
+                                  aria-label={
+                                    equipped
+                                      ? `${skin.name}, equipped`
+                                      : unlocked
+                                        ? `Equip ${skin.name} dragon skin`
+                                        : `Buy ${skin.name} dragon skin for ${skin.cost} ${skin.cost === 1 ? "token" : "tokens"}`
+                                  }
+                                  aria-pressed={equipped}
+                                  disabled={!unlocked && collection.tokens < skin.cost}
+                                  onPointerDown={(event) => event.stopPropagation()}
+                                  onKeyDown={(event) => event.stopPropagation()}
+                                  onClick={() => selectOrBuySkin(skin)}
+                                >
+                                  <span
+                                    className="dragon-shop-swatch"
+                                    style={{ backgroundColor: skin.preview }}
+                                    aria-hidden="true"
+                                  />
+                                  <span className="dragon-shop-name">
+                                    <strong>{skin.icon} {skin.name}</strong>
+                                    <small>{unlocked ? "Owned" : `${skin.cost} ${skin.cost === 1 ? "token" : "tokens"}`}</small>
+                                  </span>
+                                  <span className="dragon-shop-action">
+                                    {equipped ? "Equipped" : unlocked ? "Equip" : "Buy"}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </section>
+                        );
+                      })
+                    )}
                   </div>
                   <button
                     className="dragon-shop-back"
@@ -1824,7 +1921,10 @@ function FlyingDragonGame() {
                         type="button"
                         onPointerDown={(event) => event.stopPropagation()}
                         onKeyDown={(event) => event.stopPropagation()}
-                        onClick={() => setShopOpen(true)}
+                        onClick={() => {
+                          setStoreTab("skins");
+                          setShopOpen(true);
+                        }}
                       >
                         🐉 Dragon skins <span>{collection.tokens} tokens</span>
                       </button>
