@@ -1,6 +1,7 @@
-import { useId } from "react";
+import { useEffect, useId } from "react";
 import "./App.css";
 import FlyingDragonGame from "./FlyingDragonGame";
+import MathicDriverGame from "./MathicDriverGame";
 
 function DragonArtwork() {
   const id = useId().replace(/:/g, "");
@@ -65,10 +66,26 @@ function DragonArtwork() {
 }
 
 function App() {
+  const game = new URLSearchParams(window.location.search).get("game");
+  const homePath = window.location.pathname;
+  const isDragonPage = game === "flying-dragon";
+  const isMathicPage = game === "mathic-driver";
+  const isGamePage = isDragonPage || isMathicPage;
+
+  useEffect(() => {
+    if (isDragonPage) {
+      document.title = "Flying Dragon — Gabby Yo Games";
+    } else if (isMathicPage) {
+      document.title = "Mathic Driver — Gabby Yo Games";
+    } else {
+      document.title = "Gabby Yo Games — Little worlds, big adventures";
+    }
+  }, [isDragonPage, isMathicPage]);
+
   return (
     <div className="site-shell">
       <header className="site-header">
-        <a className="brand" href="#top" aria-label="Gabby Yo Games home">
+        <a className="brand" href={homePath} aria-label="Gabby Yo Games home">
           <span className="brand-mark" aria-hidden="true">
             <span />
             <span />
@@ -78,12 +95,38 @@ function App() {
           <span>gabby yo <strong>games</strong></span>
         </a>
         <nav aria-label="Main navigation">
-          <a href="#games">The games</a>
-          <a className="nav-cta" href="#about">A little about</a>
+          <a href={isGamePage ? `${homePath}#games` : "#games"}>{isGamePage ? "All games" : "The games"}</a>
+          <a className="nav-cta" href={isGamePage ? homePath : "#about"}>{isGamePage ? "Home" : "A little about"}</a>
         </nav>
       </header>
 
       <main id="top">
+        {isGamePage ? (
+          <section className="game-page" aria-labelledby="game-page-title">
+            <a className="text-link game-page-back" href={`${homePath}#games`}>
+              <span aria-hidden="true">←</span> All games
+            </a>
+            <div className="game-page-heading">
+              <p className="eyebrow">{isDragonPage ? "GAME NO. 001" : "GAME NO. 002"}</p>
+              <h1 id="game-page-title">{isDragonPage ? "Flying Dragon" : "Mathic Driver"}</h1>
+              <p>
+                {isDragonPage
+                  ? "Fly over the whales, then stop tapping to dive under lightning after 10 points. How far can you fly?"
+                  : "Look through the windshield, remember the problem, then steer into the right answer."}
+              </p>
+            </div>
+            {isDragonPage ? (
+              <article className="game-card game-feature game-page-card">
+                <FlyingDragonGame />
+              </article>
+            ) : (
+              <article className="game-card mathic-game-card game-page-card">
+                <MathicDriverGame />
+              </article>
+            )}
+          </section>
+        ) : (
+          <>
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-copy">
             <p className="eyebrow"><span className="eyebrow-dot" /> A tiny indie game corner</p>
@@ -91,7 +134,7 @@ function App() {
             <p className="hero-description">
               A home for the games I dream up, make, and can’t wait to share. Pick a world and come play.
             </p>
-            <a className="button button-primary" href="#flying-dragon">
+            <a className="button button-primary" href="?game=flying-dragon">
               Play Flying Dragon <span aria-hidden="true">↓</span>
             </a>
             <div className="hero-note">
@@ -113,22 +156,36 @@ function App() {
           <div className="section-heading">
             <div>
               <p className="eyebrow">The little game shelf</p>
-              <h2 id="games-title">A sky full of <span>adventure</span></h2>
+              <h2 id="games-title">Pick a game. <span>Hit the road.</span></h2>
             </div>
-            <p className="section-aside">Take the controls.<br />See how far you can fly.</p>
+            <p className="section-aside">Two little games.<br />A whole lot to play.</p>
           </div>
 
-          <article className="game-card game-feature" id="flying-dragon">
-            <div className="game-info game-feature-info">
-              <div className="game-meta">
-                <span className="status"><span /> NOW PLAYABLE</span>
-                <span className="game-number">NO. 001</span>
+          <div className="game-shelf">
+            <article className="game-card game-shelf-card">
+              <div className="game-info">
+                <div className="game-meta">
+                  <span className="status"><span /> NOW PLAYABLE</span>
+                  <span className="game-number">NO. 001</span>
+                </div>
+                <h3>Flying Dragon</h3>
+                <p>Fly over the whales, then stop tapping to dive under lightning after 10 points. How far can you fly?</p>
+                <a className="button button-outline" href="?game=flying-dragon">Play Flying Dragon <span aria-hidden="true">→</span></a>
               </div>
-              <h3>Flying Dragon</h3>
-              <p>Fly over the whales, then stop tapping to dive under lightning after 10 points. How far can you fly?</p>
-            </div>
-            <FlyingDragonGame />
-          </article>
+            </article>
+
+            <article className="game-card game-shelf-card">
+              <div className="game-info">
+                <div className="game-meta">
+                  <span className="status"><span /> NOW PLAYABLE</span>
+                  <span className="game-number">NO. 002</span>
+                </div>
+                <h3>Mathic Driver</h3>
+                <p>Remember the math question, then steer into the right answer as it comes down the road.</p>
+                <a className="button button-outline" href="?game=mathic-driver">Play Mathic Driver <span aria-hidden="true">→</span></a>
+              </div>
+            </article>
+          </div>
 
           <div className="coming-soon">
             <span className="coming-icon" aria-hidden="true">＋</span>
@@ -148,15 +205,17 @@ function App() {
           </div>
           <a className="button button-outline" href="#top">Back to the top <span aria-hidden="true">↑</span></a>
         </section>
+          </>
+        )}
       </main>
 
       <footer className="site-footer">
-        <a className="brand footer-brand" href="#top">
+        <a className="brand footer-brand" href={homePath}>
           <span className="brand-mark" aria-hidden="true"><span /><span /><span /><span /></span>
           <span>gabby yo <strong>games</strong></span>
         </a>
         <p>Made with a little magic <span aria-hidden="true">♥</span> © 2026 Gabby Yo Games</p>
-        <a className="footer-top" href="#top">Back to top ↑</a>
+        <a className="footer-top" href={isGamePage ? `${homePath}#games` : "#top"}>{isGamePage ? "All games ↑" : "Back to top ↑"}</a>
       </footer>
     </div>
   );

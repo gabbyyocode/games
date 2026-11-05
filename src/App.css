@@ -328,6 +328,82 @@ h3 {
   text-align: right;
 }
 
+.game-shelf {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.game-shelf-card {
+  min-height: 250px;
+  display: flex;
+  gap: 0;
+  padding: 22px;
+}
+
+.game-shelf-card .game-info {
+  width: 100%;
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0;
+}
+
+.game-shelf-card .game-meta {
+  width: 100%;
+  margin-bottom: 22px;
+}
+
+.game-shelf-card .game-info h3 {
+  margin-bottom: 9px;
+}
+
+.game-shelf-card .game-info > p {
+  max-width: 430px;
+}
+
+.game-shelf-card .button {
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+.game-page {
+  padding: 38px 0 74px;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.game-page-back {
+  margin-bottom: 22px;
+}
+
+.game-page-heading {
+  max-width: 740px;
+  margin-bottom: 24px;
+}
+
+.game-page-heading h1 {
+  margin: 8px 0 10px;
+  font-size: clamp(32px, 5vw, 48px);
+  letter-spacing: -1.8px;
+}
+
+.game-page-heading > p:last-child {
+  max-width: 620px;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.game-page-card {
+  margin-top: 0;
+}
+
+.game-page-card.mathic-game-card {
+  margin-top: 0;
+}
+
 .game-card {
   min-height: 250px;
   position: relative;
@@ -339,6 +415,864 @@ h3 {
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 12px;
   overflow: hidden;
+}
+
+.mathic-game-card {
+  display: block;
+  min-height: 0;
+  margin-top: 16px;
+  padding: 18px;
+}
+
+.mathic-game {
+  color: #f4f0e9;
+}
+
+.mathic-game-header,
+.mathic-game-title,
+.mathic-scoreboard,
+.mathic-scoreboard > span {
+  display: flex;
+  align-items: center;
+}
+
+.mathic-game-header {
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 4px 15px;
+}
+
+.mathic-game-title {
+  gap: 12px;
+}
+
+.mathic-car-mark {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  color: #29243b;
+  background: #f3c58f;
+  border-radius: 12px;
+  font-size: 19px;
+}
+
+.mathic-kicker,
+.mathic-game-title h4 {
+  margin: 0;
+}
+
+.mathic-kicker {
+  color: var(--color-lilac);
+  font-family: var(--font-display);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+}
+
+.mathic-game-title h4 {
+  margin-top: 2px;
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+
+.mathic-scoreboard {
+  gap: 18px;
+}
+
+.mathic-scoreboard > span {
+  gap: 7px;
+}
+
+.mathic-scoreboard small {
+  color: #8e8b9b;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.mathic-scoreboard strong {
+  color: #f4f0e9;
+  font-family: var(--font-display);
+  font-size: 16px;
+}
+
+.mathic-hearts {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mathic-heart {
+  width: 25px;
+  height: 23px;
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  background: #35141e;
+  clip-path: polygon(0 20%, 20% 20%, 20% 0, 40% 0, 40% 20%, 60% 20%, 60% 0, 80% 0, 80% 20%, 100% 20%, 100% 60%, 80% 60%, 80% 80%, 60% 80%, 60% 90%, 50% 90%, 50% 100%, 40% 100%, 40% 90%, 30% 90%, 30% 80%, 20% 80%, 20% 60%, 0 60%);
+  filter: drop-shadow(0 2px 1px rgba(0, 0, 0, 0.45));
+}
+
+.mathic-heart::before {
+  position: absolute;
+  inset: 3px 4px 4px;
+  content: "";
+  background: linear-gradient(145deg, #ff6670 0%, #ed263f 55%, #a70f2d 100%);
+  clip-path: polygon(0 20%, 20% 20%, 20% 0, 40% 0, 40% 20%, 60% 20%, 60% 0, 80% 0, 80% 20%, 100% 20%, 100% 60%, 80% 60%, 80% 80%, 60% 80%, 60% 90%, 50% 90%, 50% 100%, 40% 100%, 40% 90%, 30% 90%, 30% 80%, 20% 80%, 20% 60%, 0 60%);
+}
+
+.mathic-heart::after {
+  width: 5px;
+  height: 4px;
+  position: absolute;
+  top: 6px;
+  left: 7px;
+  content: "";
+  background: #ffd1bc;
+  box-shadow: 5px 0 #ffd1bc, 0 4px #ff8e88;
+}
+
+.mathic-heart.is-empty {
+  background: #493541;
+}
+
+.mathic-heart.is-empty::before {
+  background: linear-gradient(145deg, #80606b, #453541);
+}
+
+.mathic-heart.is-empty::after {
+  background: #b19aa3;
+  box-shadow: 5px 0 #b19aa3, 0 4px #927983;
+}
+
+.mathic-scene {
+  width: 100%;
+  min-height: 410px;
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(180deg, #f3b18e 0%, #f5d1a3 38%, #a7ad83 62%, #8d9874 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  overflow: hidden;
+  isolation: isolate;
+  outline: none;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.mathic-world {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(180deg, #f3b18e 0%, #f5d1a3 53%, #547f87 53%, #294e65 75%);
+  transform-origin: 50% 70%;
+  transition: transform 420ms cubic-bezier(0.2, 0.75, 0.3, 1), rotate 420ms cubic-bezier(0.2, 0.75, 0.3, 1), translate 420ms cubic-bezier(0.2, 0.75, 0.3, 1);
+  will-change: transform;
+}
+
+.mathic-scene:focus-visible {
+  outline: 3px solid var(--color-peach);
+  outline-offset: 3px;
+}
+
+.mathic-sky {
+  position: absolute;
+  z-index: 0;
+  inset: 0 0 43%;
+  background: linear-gradient(180deg, #f3b18e 0%, #f5d1a3 68%, #e8c68f 100%);
+}
+
+.mathic-sun {
+  width: 56px;
+  height: 56px;
+  position: absolute;
+  top: 12%;
+  right: 16%;
+  border-radius: 50%;
+  background: #fff0b9;
+  box-shadow: 0 0 0 12px rgba(255, 240, 185, 0.16);
+}
+
+.mathic-cloud {
+  position: absolute;
+  width: 76px;
+  height: 23px;
+  border-radius: 50px;
+  background: rgba(255, 247, 232, 0.7);
+}
+
+.mathic-cloud::before,
+.mathic-cloud::after {
+  position: absolute;
+  content: "";
+  border-radius: 50%;
+  background: inherit;
+}
+
+.mathic-cloud::before {
+  width: 31px;
+  height: 31px;
+  left: 13px;
+  bottom: 4px;
+}
+
+.mathic-cloud::after {
+  width: 39px;
+  height: 39px;
+  left: 31px;
+  bottom: 1px;
+}
+
+.mathic-cloud-one {
+  top: 26%;
+  left: 15%;
+}
+
+.mathic-cloud-two {
+  top: 16%;
+  right: 32%;
+  transform: scale(0.7);
+}
+
+.mathic-water {
+  position: absolute;
+  z-index: 1;
+  inset: 53% 0 25%;
+  background:
+    repeating-linear-gradient(176deg, transparent 0 18px, rgba(210, 235, 222, 0.18) 19px 21px, transparent 22px 39px),
+    linear-gradient(180deg, #547f87 0%, #356875 55%, #294e65 100%);
+}
+
+.mathic-bridge {
+  position: absolute;
+  z-index: 2;
+  inset: 53% 0 25%;
+  overflow: hidden;
+}
+
+.mathic-bridge-rail {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  filter: drop-shadow(0 2px 1px rgba(32, 45, 53, 0.45));
+}
+
+.mathic-bridge-rail-left {
+  clip-path: polygon(39% 0, 41% 0, 3% 100%, 0 100%);
+  background: linear-gradient(90deg, #786f67, #e0d0b1 50%, #fff1d2 72%, #716960);
+}
+
+.mathic-bridge-rail-right {
+  clip-path: polygon(59% 0, 61% 0, 100% 100%, 97% 100%);
+  background: linear-gradient(270deg, #786f67, #e0d0b1 50%, #fff1d2 72%, #716960);
+}
+
+.mathic-bridge-supports {
+  position: absolute;
+  inset: 6% 0 0;
+  background:
+    linear-gradient(76deg, transparent 0 22%, rgba(196, 198, 180, 0.8) 22.3% 23.3%, transparent 23.6% 76%, rgba(196, 198, 180, 0.8) 76.3% 77.3%, transparent 77.6%);
+}
+
+.mathic-road {
+  position: absolute;
+  z-index: 3;
+  inset: 53% 0 25%;
+  background:
+    repeating-linear-gradient(180deg, #595767 0 22px, #514f5c 22px 44px);
+  clip-path: polygon(42% 0, 58% 0, 100% 100%, 0 100%);
+}
+
+.mathic-road::before,
+.mathic-road::after {
+  width: 3px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  content: "";
+  background: linear-gradient(180deg, #d6c6a9, #fff1d2 35%, #bcb3a3);
+  box-shadow: 0 0 4px rgba(238, 230, 211, 0.4);
+}
+
+.mathic-road::before {
+  left: 0;
+  transform: rotate(25deg);
+  transform-origin: top left;
+}
+
+.mathic-road::after {
+  right: 0;
+  transform: rotate(-25deg);
+  transform-origin: top right;
+}
+
+.mathic-center-dashes {
+  width: 5px;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 2px);
+  background: repeating-linear-gradient(180deg, #f5e1a8 0 23px, transparent 23px 49px);
+  transform: perspective(90px) rotateX(-15deg);
+  transform-origin: top;
+  animation: mathic-road-flow 800ms linear infinite;
+}
+
+@keyframes mathic-road-flow {
+  from { background-position-y: 0; }
+  to { background-position-y: 49px; }
+}
+
+.mathic-windshield-frame {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  pointer-events: none;
+}
+
+.mathic-windshield-roof {
+  height: 7%;
+  position: absolute;
+  inset: 0 0 auto;
+  background: linear-gradient(180deg, #211f2c, #393644);
+  border-bottom: 3px solid #827d88;
+}
+
+.mathic-windshield-pillar {
+  width: 10%;
+  position: absolute;
+  inset-block: 0;
+  background: linear-gradient(90deg, #262431, #4a4654 72%, #77717d);
+}
+
+.mathic-windshield-pillar-left {
+  left: 0;
+  clip-path: polygon(0 0, 27% 0, 100% 100%, 0 100%);
+}
+
+.mathic-windshield-pillar-right {
+  right: 0;
+  background: linear-gradient(270deg, #262431, #4a4654 72%, #77717d);
+  clip-path: polygon(73% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.mathic-dash {
+  position: absolute;
+  z-index: 7;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 25%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 15px 8% 12px;
+  background: linear-gradient(180deg, #55515e 0%, #302e3a 20%, #211f2b 100%);
+  border-top: 5px solid #837e88;
+  border-radius: 50% 50% 0 0 / 22% 22% 0 0;
+  box-shadow: 0 -10px 24px rgba(37, 35, 47, 0.4);
+}
+
+.mathic-dash-score,
+.mathic-speed {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  color: #f4f0e9;
+}
+
+.mathic-dash-score span,
+.mathic-speed span {
+  color: #c6c1cc;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.mathic-dash-score strong,
+.mathic-speed strong {
+  font-family: var(--font-display);
+  font-size: 19px;
+}
+
+.mathic-dash-lives {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mathic-steering-wheel {
+  width: clamp(76px, 11vw, 112px);
+  height: clamp(64px, 9vw, 86px);
+  position: absolute;
+  top: -34px;
+  left: 50%;
+  border: 9px solid #201e2a;
+  border-bottom-width: 13px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 3px #686371, 0 5px 8px rgba(20, 19, 28, 0.4);
+  transition: transform 220ms ease;
+}
+
+.mathic-steering-controls {
+  position: absolute;
+  z-index: 2;
+  top: 24px;
+  left: 50%;
+  display: flex;
+  gap: clamp(116px, 24vw, 146px);
+  transform: translateX(-50%);
+}
+
+.mathic-steering-controls button {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  color: #fff7e8;
+  background: linear-gradient(145deg, #716d7b, #393643);
+  border: 2px solid #a7a1ad;
+  border-radius: 50%;
+  box-shadow: 0 3px 6px rgba(20, 19, 28, 0.4);
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.mathic-steering-controls button:hover,
+.mathic-steering-controls button:focus-visible {
+  color: #30283c;
+  background: #d3c9ff;
+}
+
+.mathic-steering-controls button:focus-visible {
+  outline: 2px solid #fff7e8;
+  outline-offset: 2px;
+}
+
+.mathic-steering-wheel span {
+  width: 23px;
+  height: 23px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: linear-gradient(145deg, #65616e, #302e3a);
+  border: 3px solid #201e2a;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.mathic-speed {
+  position: absolute;
+  top: 49px;
+  left: 50%;
+  padding: 3px 7px;
+  background: #211f2b;
+  border: 1px solid #686371;
+  border-radius: 5px;
+  transform: translateX(-50%);
+}
+
+.mathic-question-sign,
+.mathic-recall-sign,
+.mathic-driving-sign {
+  position: absolute;
+  z-index: 5;
+  top: 10%;
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  min-width: 220px;
+  padding: 13px 22px;
+  color: #30283c;
+  background: #fff7e8;
+  border: 3px solid #d5a779;
+  border-radius: 10px;
+  box-shadow: 0 6px 0 rgba(68, 51, 56, 0.16), 0 12px 24px rgba(64, 46, 52, 0.18);
+  text-align: center;
+  transform: translateX(-50%);
+  animation: mathic-sign-arrive 240ms ease-out both;
+}
+
+@keyframes mathic-sign-arrive {
+  from { opacity: 0; transform: translate(-50%, -10px) scale(0.96); }
+  to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+.mathic-question-sign span,
+.mathic-recall-sign span,
+.mathic-driving-sign span {
+  color: #736a83;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.3px;
+}
+
+.mathic-question-sign strong {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 4vw, 38px);
+  letter-spacing: -1px;
+}
+
+.mathic-question-sign small,
+.mathic-recall-sign small {
+  color: #877c86;
+  font-size: 10px;
+}
+
+.mathic-recall-sign,
+.mathic-driving-sign {
+  min-width: 190px;
+  padding: 11px 18px;
+}
+
+.mathic-recall-sign strong,
+.mathic-driving-sign strong {
+  font-family: var(--font-display);
+  font-size: 15px;
+}
+
+.mathic-driving-sign {
+  top: 14%;
+  color: #fff7e8;
+  background: rgba(42, 39, 55, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+}
+
+.mathic-driving-sign span {
+  color: #f2c995;
+}
+
+.mathic-answer-signs {
+  position: absolute;
+  z-index: 6;
+  top: 52%;
+  right: 25%;
+  left: 25%;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: end;
+  gap: clamp(4px, 1.5vw, 16px);
+  animation: mathic-answers-approach 8s linear both;
+  transform-origin: center top;
+  transition: translate 360ms cubic-bezier(0.2, 0.75, 0.3, 1);
+  translate: var(--mathic-steer-shift, 0%) 0;
+}
+
+@keyframes mathic-answers-approach {
+  from {
+    top: 53%;
+    right: 30%;
+    left: 30%;
+    opacity: 0.55;
+    transform: scale(0.55);
+  }
+  to {
+    top: 59%;
+    right: 3%;
+    left: 3%;
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.mathic-answer-sign {
+  min-width: 0;
+  min-height: clamp(66px, 10vw, 96px);
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 5px;
+  padding: 8px 3px;
+  color: #312a40;
+  background: #fff7e8;
+  border: 2px solid #d6aa7f;
+  border-radius: 8px;
+  box-shadow: 0 5px 0 rgba(45, 40, 58, 0.3);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+
+.mathic-answer-sign > span {
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  color: #fff7e8;
+  background: #7468c1;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.mathic-answer-sign strong {
+  font-family: var(--font-display);
+  font-size: clamp(15px, 2.8vw, 25px);
+  overflow-wrap: anywhere;
+}
+
+.mathic-answer-sign.is-selected,
+.mathic-answer-sign:hover {
+  background: #eee9ff;
+  border-color: #9284e5;
+  box-shadow: 0 0 0 3px rgba(183, 170, 255, 0.52), 0 8px 18px rgba(183, 170, 255, 0.34);
+  transform: translateY(-4px) scale(1.05);
+}
+
+.mathic-steer-hint {
+  position: absolute;
+  z-index: 6;
+  right: 0;
+  bottom: 22%;
+  left: 0;
+  margin: 0;
+  color: #fff7e8;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-align: center;
+  text-shadow: 0 1px 5px #292735;
+  pointer-events: none;
+}
+
+.mathic-overlay {
+  position: absolute;
+  z-index: 10;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(42, 39, 55, 0.43);
+}
+
+.mathic-prompt {
+  width: min(100%, 440px);
+  position: relative;
+  padding: 21px 24px 18px;
+  color: #f4f0e9;
+  background: rgba(31, 30, 45, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 16px 45px rgba(39, 33, 54, 0.3);
+  text-align: center;
+}
+
+.mathic-prompt-spark {
+  position: absolute;
+  top: 13px;
+  right: 16px;
+  color: #f3c58f;
+  font-size: 20px;
+}
+
+.mathic-prompt-kicker {
+  margin: 0 0 5px;
+  color: #c7bfff;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+
+.mathic-prompt h5 {
+  margin: 0 0 7px;
+  font-family: var(--font-display);
+  font-size: clamp(20px, 3vw, 28px);
+  letter-spacing: -0.7px;
+}
+
+.mathic-prompt-copy {
+  max-width: 350px;
+  margin: 0 auto 13px;
+  color: #c3bfce;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.mathic-level-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.mathic-level-picker button {
+  min-height: 52px;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  padding: 5px;
+  color: #d3cfde;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.mathic-level-picker button.is-selected {
+  color: #fff7e8;
+  background: rgba(183, 170, 255, 0.17);
+  border-color: var(--color-lilac);
+}
+
+.mathic-level-picker button strong {
+  font-family: var(--font-display);
+  font-size: 11px;
+  text-transform: capitalize;
+}
+
+.mathic-level-picker button span {
+  color: #aaa5b7;
+  font-size: 8px;
+}
+
+.mathic-start-button {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 0 18px;
+  color: #29243b;
+  background: var(--color-lilac);
+  border: 0;
+  border-radius: 7px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mathic-start-button:hover {
+  background: #d0c8ff;
+}
+
+.mathic-start-button:focus-visible,
+.mathic-level-picker button:focus-visible,
+.mathic-answer-sign:focus-visible {
+  outline: 2px solid #fff7e8;
+  outline-offset: 3px;
+}
+
+.mathic-control-hint {
+  margin: 9px 0 0;
+  color: #9c97ad;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.mathic-crash-message {
+  position: absolute;
+  z-index: 9;
+  bottom: calc(25% + 6px);
+  left: 50%;
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  max-width: 90%;
+  padding: 7px 12px;
+  color: #fff7e8;
+  background: rgba(88, 46, 54, 0.92);
+  border: 2px solid #f2a58d;
+  border-radius: 9px;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+.mathic-crash-message strong {
+  color: #ffc1a8;
+  font-family: var(--font-display);
+  font-size: 18px;
+}
+
+.mathic-crash-message span,
+.mathic-crash-message small {
+  font-size: 9px;
+}
+
+.mathic-crash-message span {
+  max-width: 250px;
+}
+
+.mathic-windshield-splash {
+  position: absolute;
+  z-index: 6;
+  inset: 7% 12% 25%;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.mathic-windshield-splash img {
+  width: min(70%, 620px);
+  height: 100%;
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
+  left: 50%;
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 7px 8px rgba(42, 30, 58, 0.28));
+  transform-origin: center bottom;
+  animation: mathic-face-impact 520ms cubic-bezier(0.18, 0.78, 0.28, 1) both;
+}
+
+@keyframes mathic-face-impact {
+  0% { opacity: 0; transform: translate(-50%, -8%) scale(0.72) rotate(-7deg); }
+  42% { opacity: 1; transform: translate(-50%, 2%) scale(1.08) rotate(2deg); }
+  68% { transform: translate(-50%, -1%) scale(0.98) rotate(-1deg); }
+  100% { opacity: 1; transform: translate(-50%, 0) scale(1) rotate(0); }
+}
+
+.mathic-timer-track {
+  height: 5px;
+  position: absolute;
+  z-index: 9;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.mathic-timer-track span {
+  height: 100%;
+  display: block;
+  background: #f3c58f;
+  transform-origin: left;
+}
+
+.mathic-game-footer {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 4px 0;
+  color: #a4a2b3;
+  font-size: 9px;
+}
+
+.mathic-key-hint {
+  color: #c7bfff;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+}
+
+.mathic-scene.mathic-phase-crash,
+.mathic-scene.mathic-phase-over {
+  animation: mathic-crash-shake 220ms ease-in-out 2;
+}
+
+@keyframes mathic-crash-shake {
+  25% { translate: -5px 0; }
+  75% { translate: 5px 0; }
 }
 
 .game-feature {
@@ -882,6 +1816,10 @@ h3 {
     padding: 48px 0 61px;
   }
 
+  .game-shelf {
+    grid-template-columns: 1fr;
+  }
+
   .game-card {
     grid-template-columns: 1fr;
     gap: 15px;
@@ -890,6 +1828,31 @@ h3 {
 
   .game-feature {
     gap: 0;
+  }
+
+  .mathic-game-card {
+    padding: 14px;
+  }
+
+  .mathic-scene {
+    min-height: 490px;
+    aspect-ratio: auto;
+  }
+
+  .mathic-answer-signs {
+    right: 25%;
+    left: 25%;
+    gap: 5px;
+  }
+
+  .mathic-answer-sign {
+    min-height: 68px;
+  }
+
+  .mathic-game-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
   }
 
   .game-feature-info {
@@ -1032,6 +1995,144 @@ h3 {
 
   .game-feature {
     padding: 11px;
+  }
+
+  .mathic-game-card {
+    padding: 10px;
+  }
+
+  .mathic-game-header {
+    gap: 7px;
+    padding: 0 1px 9px;
+  }
+
+  .mathic-game-title {
+    gap: 7px;
+  }
+
+  .mathic-car-mark {
+    width: 31px;
+    height: 31px;
+    border-radius: 9px;
+  }
+
+  .mathic-game-title h4 {
+    font-size: 15px;
+  }
+
+  .mathic-kicker {
+    font-size: 6px;
+    letter-spacing: 1px;
+  }
+
+  .mathic-scoreboard {
+    gap: 8px;
+  }
+
+  .mathic-scoreboard > span {
+    gap: 4px;
+  }
+
+  .mathic-scoreboard small {
+    font-size: 6px;
+    letter-spacing: 0.6px;
+  }
+
+  .mathic-scoreboard strong {
+    font-size: 13px;
+  }
+
+  .mathic-scene {
+    min-height: 470px;
+    border-radius: 8px;
+  }
+
+  .mathic-question-sign {
+    top: 11%;
+    min-width: 190px;
+    padding: 10px 14px;
+  }
+
+  .mathic-question-sign strong {
+    font-size: clamp(22px, 7vw, 30px);
+  }
+
+  .mathic-answer-signs {
+    right: 25%;
+    left: 25%;
+    gap: 3px;
+  }
+
+  .mathic-answer-sign {
+    min-height: 61px;
+    gap: 3px;
+    padding: 5px 1px;
+    border-width: 1px;
+  }
+
+  .mathic-answer-sign > span {
+    width: 17px;
+    height: 17px;
+    font-size: 9px;
+  }
+
+  .mathic-answer-sign strong {
+    font-size: clamp(13px, 4vw, 18px);
+  }
+
+  .mathic-steer-hint {
+    bottom: 29%;
+    font-size: 7px;
+  }
+
+  .mathic-dash {
+    height: 25%;
+    padding: 8px 8%;
+  }
+
+  .mathic-dash-score strong,
+  .mathic-speed strong {
+    font-size: 16px;
+  }
+
+  .mathic-dash-lives {
+    font-size: 13px;
+    letter-spacing: 1px;
+  }
+
+  .mathic-prompt {
+    padding: 17px 15px 14px;
+  }
+
+  .mathic-prompt-copy {
+    font-size: 9px;
+  }
+
+  .mathic-level-picker {
+    gap: 4px;
+  }
+
+  .mathic-level-picker button {
+    min-height: 48px;
+  }
+
+  .mathic-level-picker button strong {
+    font-size: 10px;
+  }
+
+  .mathic-level-picker button span {
+    font-size: 7px;
+  }
+
+  .mathic-steering-wheel {
+    width: 76px;
+    height: 64px;
+    top: -30px;
+  }
+
+  .mathic-game-footer {
+    padding-top: 7px;
+    font-size: 8px;
   }
 
   .game-feature-info {
