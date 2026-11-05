@@ -23,8 +23,8 @@ type Obstacle = {
 
 type GamePhase = "ready" | "playing" | "over";
 type ThemeId = "sky" | "volcano" | "forest" | "ice" | "desert" | "night";
-type DragonSkinId = "classic" | "ember" | "moss" | "frost" | "royal";
-type DragonAccessory = "flame" | "leaves" | "ice" | "crown" | "none";
+type DragonSkinId = "classic" | "ember" | "moss" | "frost" | "royal" | "dragonfruit";
+type DragonAccessory = "flame" | "leaves" | "ice" | "crown" | "dragonfruit" | "none";
 
 type WorldTheme = {
   id: ThemeId;
@@ -146,6 +146,22 @@ const DRAGON_SKINS: DragonSkin[] = [
     horn: "#f5d875",
     accent: "#ffe78b",
     accessory: "crown",
+  },
+  {
+    id: "dragonfruit",
+    name: "Dragonfruit",
+    icon: "🐉",
+    cost: 5,
+    preview: "#f05b9e",
+    body: "#f05b9e",
+    bodyDark: "#aa326d",
+    wing: "#ff9bc4",
+    wingLine: "rgba(255, 232, 244, 0.88)",
+    belly: "#ffe0e9",
+    snout: "#ffadd0",
+    horn: "#b8e889",
+    accent: "#a7db69",
+    accessory: "dragonfruit",
   },
 ];
 
@@ -492,6 +508,152 @@ function drawStorm(context: CanvasRenderingContext2D, storm: Storm) {
   context.restore();
 }
 
+type FallingFruit = "banana" | "strawberry" | "raspberry" | "coconut" | "watermelon";
+
+function drawFallingFruit(
+  context: CanvasRenderingContext2D,
+  fruit: FallingFruit,
+  x: number,
+  y: number,
+  rotation: number,
+  scale: number,
+) {
+  context.save();
+  context.translate(x, y);
+  context.rotate(rotation);
+  context.scale(scale, scale);
+
+  if (fruit === "banana") {
+    context.fillStyle = "#f5c84c";
+    context.beginPath();
+    context.moveTo(-13, -9);
+    context.quadraticCurveTo(-3, 5, 14, -2);
+    context.quadraticCurveTo(8, 15, -5, 13);
+    context.quadraticCurveTo(-15, 10, -13, -9);
+    context.closePath();
+    context.fill();
+    context.strokeStyle = "#d99b37";
+    context.lineWidth = 2;
+    context.beginPath();
+    context.moveTo(-12, -9);
+    context.lineTo(-15, -11);
+    context.moveTo(13, -2);
+    context.lineTo(16, -3);
+    context.stroke();
+  } else if (fruit === "strawberry") {
+    context.fillStyle = "#ed5571";
+    context.beginPath();
+    context.moveTo(0, -11);
+    context.bezierCurveTo(15, -14, 14, -2, 0, 12);
+    context.bezierCurveTo(-14, -2, -15, -14, 0, -11);
+    context.fill();
+    context.fillStyle = "#78b96a";
+    context.beginPath();
+    context.moveTo(-9, -10);
+    context.lineTo(-5, -17);
+    context.lineTo(0, -12);
+    context.lineTo(5, -17);
+    context.lineTo(10, -10);
+    context.lineTo(0, -7);
+    context.closePath();
+    context.fill();
+    context.fillStyle = "#ffe39b";
+    for (const [seedX, seedY] of [[-6, -5], [2, -4], [-3, 2], [6, 1], [1, 7]]) {
+      context.beginPath();
+      context.ellipse(seedX, seedY, 1, 1.8, 0, 0, Math.PI * 2);
+      context.fill();
+    }
+  } else if (fruit === "raspberry") {
+    context.fillStyle = "#d93669";
+    for (const [berryX, berryY, radius] of [
+      [-5, -5, 6],
+      [4, -7, 6],
+      [-8, 2, 6],
+      [1, 1, 7],
+      [8, 2, 5],
+      [-4, 9, 5],
+      [5, 9, 5],
+    ]) {
+      context.beginPath();
+      context.arc(berryX, berryY, radius, 0, Math.PI * 2);
+      context.fill();
+    }
+    context.fillStyle = "#8fc96d";
+    context.beginPath();
+    context.moveTo(-6, -10);
+    context.lineTo(-3, -17);
+    context.lineTo(1, -11);
+    context.lineTo(6, -17);
+    context.lineTo(7, -9);
+    context.closePath();
+    context.fill();
+  } else if (fruit === "coconut") {
+    context.fillStyle = "#79513f";
+    context.beginPath();
+    context.arc(0, 0, 13, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = "#f5ead1";
+    context.beginPath();
+    context.arc(0, 0, 9.5, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = "#79513f";
+    for (const [eyeX, eyeY] of [[-4, -3], [4, -3], [0, 4]]) {
+      context.beginPath();
+      context.arc(eyeX, eyeY, 1.4, 0, Math.PI * 2);
+      context.fill();
+    }
+  } else {
+    context.fillStyle = "#4c9d63";
+    context.beginPath();
+    context.moveTo(-15, -8);
+    context.quadraticCurveTo(0, -14, 15, -8);
+    context.lineTo(11, 6);
+    context.quadraticCurveTo(0, 13, -11, 6);
+    context.closePath();
+    context.fill();
+    context.fillStyle = "#f16b78";
+    context.beginPath();
+    context.moveTo(-11, -7);
+    context.quadraticCurveTo(0, -11, 11, -7);
+    context.lineTo(8, 4);
+    context.quadraticCurveTo(0, 9, -8, 4);
+    context.closePath();
+    context.fill();
+    context.fillStyle = "#332d43";
+    for (const [seedX, seedY] of [[-5, -4], [3, -5], [0, 1], [6, 2], [-4, 4]]) {
+      context.beginPath();
+      context.ellipse(seedX, seedY, 1, 1.7, -0.3, 0, Math.PI * 2);
+      context.fill();
+    }
+  }
+
+  context.restore();
+}
+
+function drawFruitRain(context: CanvasRenderingContext2D, time: number, dragonY: number) {
+  const fruits: FallingFruit[] = ["banana", "strawberry", "raspberry", "coconut", "watermelon"];
+  const loopHeight = FLOOR_Y + 90;
+
+  for (let fruitIndex = 0; fruitIndex < 15; fruitIndex += 1) {
+    const x = (fruitIndex * 137 + 61) % WIDTH;
+    const speed = 72 + (fruitIndex % 4) * 17;
+    const y = ((time * speed + fruitIndex * 113) % loopHeight) - 70;
+    if (y > FLOOR_Y - 18) continue;
+    if (Math.abs(x - DRAGON_X) < 70 && Math.abs(y - dragonY) < 58) continue;
+
+    const rotation = Math.sin(time * 1.5 + fruitIndex * 2.1) * 0.35;
+    const scale = 0.72 + (fruitIndex % 3) * 0.13;
+    drawFallingFruit(
+      context,
+      fruits[fruitIndex % fruits.length],
+      x,
+      y,
+      rotation,
+      scale,
+    );
+  }
+}
+
 function drawDragon(
   context: CanvasRenderingContext2D,
   y: number,
@@ -621,6 +783,28 @@ function drawDragon(
     context.closePath();
     context.fill();
     context.fillRect(12, -20, 20, 3);
+  } else if (skin.accessory === "dragonfruit") {
+    context.fillStyle = skin.accent;
+    context.beginPath();
+    context.moveTo(-26, -2);
+    context.lineTo(-27, -13);
+    context.lineTo(-18, -9);
+    context.lineTo(-15, -20);
+    context.lineTo(-7, -11);
+    context.lineTo(1, -22);
+    context.lineTo(7, -12);
+    context.lineTo(15, -22);
+    context.lineTo(17, -10);
+    context.lineTo(26, -15);
+    context.lineTo(24, -3);
+    context.closePath();
+    context.fill();
+    context.fillStyle = "#d9f19a";
+    for (const [spineX, spineY] of [[-21, -6], [-12, -12], [-3, -11], [7, -12], [18, -7]]) {
+      context.beginPath();
+      context.ellipse(spineX, spineY, 2.2, 4.2, -0.5, 0, Math.PI * 2);
+      context.fill();
+    }
   }
 
   context.fillStyle = "#29253e";
@@ -793,6 +977,10 @@ function drawWorld(
     else context.lineTo(x, waveY);
   }
   context.stroke();
+
+  if (dragonSkin.id === "dragonfruit") {
+    drawFruitRain(context, timestamp / 1000, world.dragonY);
+  }
 
   for (const obstacle of world.obstacles) {
     drawWhale(context, obstacle.x);
