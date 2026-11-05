@@ -402,14 +402,11 @@ function FlyingDragonGame() {
   const [phase, setPhase] = useState<GamePhase>("ready");
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(0);
-  const [canFullscreen, setCanFullscreen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [fullscreenError, setFullscreenError] = useState("");
+  const [isFallbackFullscreen, setIsFallbackFullscreen] = useState(false);
+  const autoFullscreenAttempted = useRef(false);
 
   useEffect(() => {
-    const game = gameRef.current;
-    setCanFullscreen(Boolean(game?.requestFullscreen));
-
     const syncFullscreen = () => {
       setIsFullscreen(document.fullscreenElement === gameRef.current);
     };
@@ -417,6 +414,26 @@ function FlyingDragonGame() {
     document.addEventListener("fullscreenchange", syncFullscreen);
     return () => document.removeEventListener("fullscreenchange", syncFullscreen);
   }, []);
+
+  useEffect(() => {
+    if (!isFallbackFullscreen) return;
+
+    const bodyOverflow = document.body.style.overflow;
+    const documentOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    const handleEscape = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") setIsFallbackFullscreen(false);
+    };
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.body.style.overflow = bodyOverflow;
+      document.documentElement.style.overflow = documentOverflow;
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [isFallbackFullscreen]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -541,6 +558,10 @@ function FlyingDragonGame() {
   }, []);
 
   const startGame = () => {
+    if (!autoFullscreenAttempted.current) {
+      autoFullscreenAttempted.current = true;
+      void enterFullscreen();
+    }
     worldRef.current = makeWorld("playing");
     worldRef.current.velocity = -470;
     setScore(0);
@@ -554,19 +575,36 @@ function FlyingDragonGame() {
     world.velocity = -470;
   };
 
-  const toggleFullscreen = async () => {
+  const enterFullscreen = async () => {
     const game = gameRef.current;
-    if (!game?.requestFullscreen) return;
+    if (!game) return;
+
+    if (!game.requestFullscreen) {
+      setIsFallbackFullscreen(true);
+      return;
+    }
 
     try {
-      if (document.fullscreenElement === game) {
-        await document.exitFullscreen();
-      } else {
-        await game.requestFullscreen();
-      }
-      setFullscreenError("");
+      await game.requestFullscreen();
+      setIsFallbackFullscreen(false);
     } catch {
-      setFullscreenError("Fullscreen is unavailable. Turn your phone sideways for a wider view.");
+      setIsFallbackFullscreen(true);
+    }
+  };
+
+  const toggleFullscreen = async () => {
+    const game = gameRef.current;
+    if (!game) return;
+
+    if (isFallbackFullscreen) {
+      setIsFallbackFullscreen(false);
+      return;
+    }
+
+    if (document.fullscreenElement === game) {
+      await document.exitFullscreen();
+    } else {
+      await enterFullscreen();
     }
   };
 
@@ -582,7 +620,7 @@ function FlyingDragonGame() {
 
   return (
     <div
-      className="dragon-game"
+      className={`dragon-game${isFallbackFullscreen ? " is-fullscreen" : ""}`}
       ref={gameRef}
       role="group"
       tabIndex={0}
@@ -601,20 +639,17 @@ function FlyingDragonGame() {
           <strong>{score}</strong>
           <span className="game-best">BEST {bestScore}</span>
         </div>
-        {canFullscreen && (
-          <button
-            className="game-fullscreen-button"
-            type="button"
-            aria-label={isFullscreen ? "Exit fullscreen" : "Play fullscreen"}
-            title={isFullscreen ? "Exit fullscreen" : "Play fullscreen"}
-            onPointerDown={(event) => event.stopPropagation()}
-            onKeyDown={(event) => event.stopPropagation()}
-            onClick={toggleFullscreen}
-          >
-            {isFullscreen ? "×" : "⛶"}
-          </button>
-        )}
-        {fullscreenError && <p className="game-fullscreen-error" role="alert">{fullscreenError}</p>}
+        <button
+          className="game-fullscreen-button"
+          type="button"
+          aria-label={isFullscreen || isFallbackFullscreen ? "Exit fullscreen" : "Play fullscreen"}
+          title={isFullscreen || isFallbackFullscreen ? "Exit fullscreen" : "Play fullscreen"}
+          onPointerDown={(event) => event.stopPropagation()}
+          onKeyDown={(event) => event.stopPropagation()}
+          onClick={toggleFullscreen}
+        >
+          {isFullscreen || isFallbackFullscreen ? "×" : "⛶"}
+        </button>
         {phase !== "playing" && (
           <div className="game-overlay">
             <div className="game-prompt">

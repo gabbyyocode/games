@@ -431,6 +431,7 @@ h3 {
 .mathic-game-header,
 .mathic-game-title,
 .mathic-scoreboard,
+.mathic-header-actions,
 .mathic-scoreboard > span {
   display: flex;
   align-items: center;
@@ -440,6 +441,69 @@ h3 {
   justify-content: space-between;
   gap: 16px;
   padding: 0 4px 15px;
+}
+
+.mathic-header-actions {
+  gap: 12px;
+}
+
+.mathic-fullscreen-button {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0;
+  color: #fff7e8;
+  background: rgba(43, 38, 73, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 22px;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mathic-fullscreen-button:focus-visible {
+  outline: 2px solid #fff7e8;
+  outline-offset: 3px;
+}
+
+.mathic-game.is-fullscreen,
+.mathic-game:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  background: #282633;
+  overflow: hidden;
+}
+
+.mathic-game.is-fullscreen .mathic-game-header,
+.mathic-game:fullscreen .mathic-game-header {
+  flex: 0 0 auto;
+  padding-bottom: 0;
+}
+
+.mathic-game.is-fullscreen .mathic-scene,
+.mathic-game:fullscreen .mathic-scene {
+  min-height: 0;
+  flex: 1 1 auto;
+  aspect-ratio: auto;
+}
+
+.mathic-game.is-fullscreen .mathic-game-footer,
+.mathic-game:fullscreen .mathic-game-footer {
+  min-height: 0;
+  flex: 0 0 auto;
+  padding-top: 0;
 }
 
 .mathic-game-title {
@@ -559,7 +623,8 @@ h3 {
   overflow: hidden;
   isolation: isolate;
   outline: none;
-  touch-action: pan-y;
+  touch-action: none;
+  overscroll-behavior: contain;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -1380,21 +1445,6 @@ h3 {
   outline-offset: 3px;
 }
 
-.game-fullscreen-error {
-  position: absolute;
-  top: 57px;
-  right: 12px;
-  z-index: 3;
-  max-width: 230px;
-  margin: 0;
-  padding: 8px 10px;
-  color: #fff7e8;
-  background: rgba(43, 38, 73, 0.9);
-  border-radius: 7px;
-  font-size: 10px;
-  line-height: 1.5;
-}
-
 .game-hud-label,
 .game-best {
   color: #ddd5ff;
@@ -1500,34 +1550,43 @@ h3 {
   display: none;
 }
 
-.dragon-game:fullscreen {
+.dragon-game:fullscreen,
+.dragon-game.is-fullscreen {
   width: 100vw;
   height: 100vh;
   height: 100dvh;
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
   max-width: none;
   aspect-ratio: auto;
   border-radius: 0;
   background: #11121b;
 }
 
-.dragon-game:fullscreen .game-prompt {
+.dragon-game:fullscreen .game-prompt,
+.dragon-game.is-fullscreen .game-prompt {
   width: min(100%, 430px);
   padding: 30px 34px 24px;
 }
 
-.dragon-game:fullscreen .game-prompt h4 {
+.dragon-game:fullscreen .game-prompt h4,
+.dragon-game.is-fullscreen .game-prompt h4 {
   font-size: clamp(24px, 4vw, 34px);
 }
 
-.dragon-game:fullscreen .game-prompt-copy {
+.dragon-game:fullscreen .game-prompt-copy,
+.dragon-game.is-fullscreen .game-prompt-copy {
   font-size: 14px;
 }
 
-.dragon-game:fullscreen .game-controls {
+.dragon-game:fullscreen .game-controls,
+.dragon-game.is-fullscreen .game-controls {
   font-size: 10px;
 }
 
-.dragon-game:fullscreen .game-rotate-hint {
+.dragon-game:fullscreen .game-rotate-hint,
+.dragon-game.is-fullscreen .game-rotate-hint {
   display: block;
   margin: 11px 0 0;
   color: #c1bdca;
@@ -1749,6 +1808,20 @@ h3 {
 @media (max-width: 760px) {
   .site-shell {
     width: min(100% - 40px, 560px);
+  }
+
+  .mathic-fullscreen-button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .mathic-windshield-splash img {
+    width: min(100%, 620px);
+  }
+
+  .mathic-game.is-fullscreen .mathic-windshield-splash img,
+  .mathic-game:fullscreen .mathic-windshield-splash img {
+    width: min(140%, 620px);
   }
 
   .site-header {
@@ -2179,7 +2252,8 @@ h3 {
     right: 8px;
   }
 
-  .dragon-game:fullscreen .game-prompt {
+  .dragon-game:fullscreen .game-prompt,
+  .dragon-game.is-fullscreen .game-prompt {
     width: min(100%, 430px);
     padding: 22px 28px 18px;
   }
@@ -2266,7 +2340,8 @@ h3 {
     display: inline;
   }
 
-  .dragon-game:fullscreen .dragon-game-screen {
+  .dragon-game:fullscreen .dragon-game-screen,
+  .dragon-game.is-fullscreen .dragon-game-screen {
     width: min(100vw, calc(100dvh * 16 / 9));
     height: auto;
     aspect-ratio: 16 / 9;
@@ -2276,7 +2351,8 @@ h3 {
     transform: translate(-50%, -50%);
   }
 
-  .dragon-game:fullscreen .game-rotate-hint {
+  .dragon-game:fullscreen .game-rotate-hint,
+  .dragon-game.is-fullscreen .game-rotate-hint {
     display: none;
   }
 }
@@ -2292,7 +2368,8 @@ h3 {
 }
 
 @media (max-width: 900px) and (orientation: portrait) {
-  .dragon-game:fullscreen .dragon-game-screen {
+  .dragon-game:fullscreen .dragon-game-screen,
+  .dragon-game.is-fullscreen .dragon-game-screen {
     width: min(100dvh, calc(100vw * 16 / 9));
     height: auto;
     aspect-ratio: 16 / 9;

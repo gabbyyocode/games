@@ -141,10 +141,74 @@ function MathicDriverGame() {
   const [lives, setLives] = useState(3);
   const [selectedLane, setSelectedLane] = useState(1);
   const [lastCrash, setLastCrash] = useState("");
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const pointerStartX = useRef<number | null>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
+  const gameRef = useRef<HTMLDivElement>(null);
+  const autoFullscreenAttempted = useRef(false);
   const selectedLaneRef = useRef(selectedLane);
   selectedLaneRef.current = selectedLane;
+
+  useEffect(() => {
+    const syncFullscreen = () => {
+      setIsFullscreen(document.fullscreenElement === gameRef.current);
+    };
+
+    document.addEventListener("fullscreenchange", syncFullscreen);
+    return () => document.removeEventListener("fullscreenchange", syncFullscreen);
+  }, []);
+
+  useEffect(() => {
+    if (!isFullscreen || document.fullscreenElement) return;
+
+    const bodyOverflow = document.body.style.overflow;
+    const documentOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+
+    const handleEscape = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") setIsFullscreen(false);
+    };
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.body.style.overflow = bodyOverflow;
+      document.documentElement.style.overflow = documentOverflow;
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [isFullscreen]);
+
+  const enterFullscreen = async () => {
+    const game = gameRef.current;
+    if (!game) return;
+
+    if (!game.requestFullscreen) {
+      setIsFullscreen(true);
+      return;
+    }
+
+    try {
+      await game.requestFullscreen();
+    } catch {
+      setIsFullscreen(true);
+    }
+  };
+
+  const toggleFullscreen = async () => {
+    const game = gameRef.current;
+    if (!game) return;
+
+    if (isFullscreen) {
+      if (document.fullscreenElement === game) {
+        await document.exitFullscreen();
+      } else {
+        setIsFullscreen(false);
+      }
+      return;
+    }
+
+    await enterFullscreen();
+  };
 
   const resolveLane = (lane: number) => {
     if (phase !== "answers" || !problem) return;
@@ -234,6 +298,10 @@ function MathicDriverGame() {
   }, [phase]);
 
   const startGame = () => {
+    if (!autoFullscreenAttempted.current) {
+      autoFullscreenAttempted.current = true;
+      void enterFullscreen();
+    }
     setScore(0);
     setLives(3);
     setProblem(null);
@@ -270,7 +338,11 @@ function MathicDriverGame() {
     : 0;
 
   return (
-    <div className="mathic-game" onKeyDownCapture={handleGameKeyDownCapture}>
+    <div
+      className={`mathic-game${isFullscreen && !document.fullscreenElement ? " is-fullscreen" : ""}`}
+      ref={gameRef}
+      onKeyDownCapture={handleGameKeyDownCapture}
+    >
       <div className="mathic-game-header">
         <div className="mathic-game-title">
           <span className="mathic-car-mark" aria-hidden="true">✦</span>
@@ -279,12 +351,23 @@ function MathicDriverGame() {
             <h4>Mathic Driver</h4>
           </div>
         </div>
-        <div className="mathic-scoreboard" aria-live="polite">
-          <span><small>SCORE</small><strong>{score}</strong></span>
-          <span className="mathic-lives" aria-label={`${lives} lives remaining`}>
-            <small>LIVES</small>
-            <GameHearts lives={lives} />
-          </span>
+        <div className="mathic-header-actions">
+          <div className="mathic-scoreboard" aria-live="polite">
+            <span><small>SCORE</small><strong>{score}</strong></span>
+            <span className="mathic-lives" aria-label={`${lives} lives remaining`}>
+              <small>LIVES</small>
+              <GameHearts lives={lives} />
+            </span>
+          </div>
+          <button
+            className="mathic-fullscreen-button"
+            type="button"
+            aria-label={isFullscreen ? "Exit fullscreen" : "Play fullscreen"}
+            title={isFullscreen ? "Exit fullscreen" : "Play fullscreen"}
+            onClick={toggleFullscreen}
+          >
+            {isFullscreen ? "×" : "⛶"}
+          </button>
         </div>
       </div>
 
