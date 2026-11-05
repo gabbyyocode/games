@@ -1581,11 +1581,32 @@ h3 {
   line-height: 1;
 }
 
+.dragon-theme-picker button span.dragon-theme-cost {
+  color: #ffdf91;
+  font-size: 7px;
+  white-space: nowrap;
+}
+
 .dragon-theme-picker button:hover,
 .dragon-theme-picker button.is-selected {
   color: #fff7e8;
   background: rgba(199, 191, 255, 0.2);
   border-color: #c7bfff;
+}
+
+.dragon-theme-picker button.is-locked {
+  border-style: dashed;
+}
+
+.dragon-theme-picker button:disabled {
+  color: #a7a2b3;
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.dragon-theme-picker button:disabled:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
 }
 
 .dragon-theme-picker button:focus-visible {

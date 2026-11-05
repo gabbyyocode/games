@@ -30,6 +30,7 @@ type WorldTheme = {
   id: ThemeId;
   name: string;
   icon: string;
+  cost: number;
   sky: [string, string, string];
   sun: string;
   sunGlow: string;
@@ -60,6 +61,7 @@ type DragonCollection = {
   tokens: number;
   unlockedSkinIds: DragonSkinId[];
   equippedSkinId: DragonSkinId;
+  unlockedThemeIds: ThemeId[];
 };
 
 const DRAGON_COLLECTION_KEY = "flyingDragonCollection";
@@ -151,10 +153,15 @@ const DEFAULT_DRAGON_COLLECTION: DragonCollection = {
   tokens: 0,
   unlockedSkinIds: ["classic"],
   equippedSkinId: "classic",
+  unlockedThemeIds: ["sky"],
 };
 
 function isDragonSkinId(value: unknown): value is DragonSkinId {
   return DRAGON_SKINS.some((skin) => skin.id === value);
+}
+
+function isThemeId(value: unknown): value is ThemeId {
+  return WORLD_THEMES.some((theme) => theme.id === value);
 }
 
 function loadDragonCollection(): DragonCollection {
@@ -179,6 +186,11 @@ function loadDragonCollection(): DragonCollection {
       throw new Error("Saved dragon collection has an invalid shape.");
     }
 
+    const savedThemeIds = collection.unlockedThemeIds ?? ["sky"];
+    if (!Array.isArray(savedThemeIds) || !savedThemeIds.every(isThemeId)) {
+      throw new Error("Saved dragon collection has invalid unlocked worlds.");
+    }
+
     const unlockedSkinIds = Array.from(
       new Set<DragonSkinId>(["classic", ...collection.unlockedSkinIds]),
     );
@@ -186,7 +198,14 @@ function loadDragonCollection(): DragonCollection {
       ? collection.equippedSkinId
       : "classic";
 
-    return { tokens: collection.tokens, unlockedSkinIds, equippedSkinId };
+    const unlockedThemeIds = Array.from(new Set<ThemeId>(["sky", ...savedThemeIds]));
+
+    return {
+      tokens: collection.tokens,
+      unlockedSkinIds,
+      equippedSkinId,
+      unlockedThemeIds,
+    };
   } catch (error) {
     console.error("Could not load the saved Flying Dragon collection.", error);
     return DEFAULT_DRAGON_COLLECTION;
@@ -198,6 +217,7 @@ const WORLD_THEMES: WorldTheme[] = [
     id: "sky",
     name: "Sky",
     icon: "☁",
+    cost: 0,
     sky: ["#f5b38f", "#f8d3a4", "#f3d9b1"],
     sun: "rgba(255, 241, 190, 0.78)",
     sunGlow: "rgba(255, 248, 224, 0.3)",
@@ -210,6 +230,7 @@ const WORLD_THEMES: WorldTheme[] = [
     id: "volcano",
     name: "Volcano",
     icon: "🌋",
+    cost: 1,
     sky: ["#4c315d", "#a24f59", "#f09b62"],
     sun: "rgba(255, 190, 114, 0.88)",
     sunGlow: "rgba(255, 112, 75, 0.28)",
@@ -222,6 +243,7 @@ const WORLD_THEMES: WorldTheme[] = [
     id: "forest",
     name: "Forest",
     icon: "🌲",
+    cost: 2,
     sky: ["#82c4b1", "#c5dba4", "#f5dfa8"],
     sun: "rgba(255, 246, 187, 0.8)",
     sunGlow: "rgba(255, 255, 218, 0.28)",
@@ -234,6 +256,7 @@ const WORLD_THEMES: WorldTheme[] = [
     id: "ice",
     name: "Ice",
     icon: "❄",
+    cost: 3,
     sky: ["#6898c3", "#add4e1", "#e7f0e9"],
     sun: "rgba(255, 255, 244, 0.82)",
     sunGlow: "rgba(230, 250, 255, 0.35)",
@@ -246,6 +269,7 @@ const WORLD_THEMES: WorldTheme[] = [
     id: "desert",
     name: "Desert",
     icon: "☀",
+    cost: 4,
     sky: ["#e77d55", "#f4b463", "#f8dda0"],
     sun: "rgba(255, 241, 171, 0.86)",
     sunGlow: "rgba(255, 242, 188, 0.3)",
@@ -258,6 +282,7 @@ const WORLD_THEMES: WorldTheme[] = [
     id: "night",
     name: "Night",
     icon: "☾",
+    cost: 4,
     sky: ["#171d46", "#394a78", "#7787a7"],
     sun: "rgba(243, 244, 255, 0.88)",
     sunGlow: "rgba(218, 228, 255, 0.22)",
@@ -834,9 +859,27 @@ function FlyingDragonGame() {
       }
       if (current.tokens < skin.cost) return current;
       return {
+        ...current,
         tokens: current.tokens - skin.cost,
         unlockedSkinIds: [...current.unlockedSkinIds, skin.id],
         equippedSkinId: skin.id,
+      };
+    });
+  };
+
+  const selectOrBuyTheme = (theme: WorldTheme) => {
+    const unlocked = collection.unlockedThemeIds.includes(theme.id);
+    if (!unlocked && collection.tokens < theme.cost) return;
+
+    selectedThemeRef.current = theme;
+    setSelectedTheme(theme.id);
+    setCollection((current) => {
+      if (current.unlockedThemeIds.includes(theme.id)) return current;
+      if (current.tokens < theme.cost) return current;
+      return {
+        ...current,
+        tokens: current.tokens - theme.cost,
+        unlockedThemeIds: [...current.unlockedThemeIds, theme.id],
       };
     });
   };
@@ -1177,7 +1220,7 @@ function FlyingDragonGame() {
                 <>
                   <p className="game-prompt-copy">
                     {phase === "ready"
-                      ? "Dodge the storm at 10. Earn a token every 10 points!"
+                      ? "Worlds cost tokens. Earn one every 10 points!"
                       : `You flew past ${score} ${score === 1 ? "whale" : "whales"}. Every 10 points earns a dragon token!`}
                   </p>
                   <div className="dragon-theme-picker" role="group" aria-label="Choose a flying world">
@@ -1185,18 +1228,29 @@ function FlyingDragonGame() {
                       <button
                         key={theme.id}
                         type="button"
-                        aria-label={`Choose ${theme.name} world`}
+                        aria-label={
+                          collection.unlockedThemeIds.includes(theme.id)
+                            ? `Choose ${theme.name} world`
+                            : `Unlock ${theme.name} world for ${theme.cost} ${theme.cost === 1 ? "token" : "tokens"}`
+                        }
                         aria-pressed={selectedTheme === theme.id}
-                        className={selectedTheme === theme.id ? "is-selected" : ""}
+                        className={[
+                          selectedTheme === theme.id ? "is-selected" : "",
+                          collection.unlockedThemeIds.includes(theme.id) ? "" : "is-locked",
+                        ].filter(Boolean).join(" ")}
+                        disabled={
+                          !collection.unlockedThemeIds.includes(theme.id) &&
+                          collection.tokens < theme.cost
+                        }
                         onPointerDown={(event) => event.stopPropagation()}
                         onKeyDown={(event) => event.stopPropagation()}
-                        onClick={() => {
-                          selectedThemeRef.current = theme;
-                          setSelectedTheme(theme.id);
-                        }}
+                        onClick={() => selectOrBuyTheme(theme)}
                       >
                         <span aria-hidden="true">{theme.icon}</span>
                         {theme.name}
+                        {!collection.unlockedThemeIds.includes(theme.id) && (
+                          <span className="dragon-theme-cost">{theme.cost} 🐉</span>
+                        )}
                       </button>
                     ))}
                   </div>
