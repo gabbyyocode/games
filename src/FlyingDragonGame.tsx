@@ -742,7 +742,6 @@ function drawFruitRain(context: CanvasRenderingContext2D, time: number, dragonY:
 function drawGalaxyBackground(
   context: CanvasRenderingContext2D,
   time: number,
-  showShootingStars: boolean,
 ) {
   const space = context.createLinearGradient(0, 0, WIDTH, HEIGHT);
   space.addColorStop(0, "#100d2b");
@@ -810,38 +809,39 @@ function drawGalaxyBackground(
     context.restore();
   }
 
-  if (showShootingStars) {
-    const shootingStars = [
-      { x: 335, y: 82, phase: 0 },
-      { x: 835, y: 233, phase: 1.8 },
-      { x: 580, y: 185, phase: 3.4 },
-    ];
-    for (const shootingStar of shootingStars) {
-      const blink = Math.pow(Math.max(0, Math.sin(time * 2.8 + shootingStar.phase)), 7);
-      if (blink < 0.08) continue;
+}
 
-      context.save();
-      context.globalAlpha = blink;
-      context.shadowColor = "#fff4c2";
-      context.shadowBlur = 18 * blink;
-      context.strokeStyle = "#fff7d5";
-      context.lineWidth = 2;
-      context.beginPath();
-      context.moveTo(shootingStar.x - 7, shootingStar.y);
-      context.lineTo(shootingStar.x + 7, shootingStar.y);
-      context.moveTo(shootingStar.x, shootingStar.y - 7);
-      context.lineTo(shootingStar.x, shootingStar.y + 7);
-      context.moveTo(shootingStar.x - 4, shootingStar.y - 4);
-      context.lineTo(shootingStar.x + 4, shootingStar.y + 4);
-      context.moveTo(shootingStar.x + 4, shootingStar.y - 4);
-      context.lineTo(shootingStar.x - 4, shootingStar.y + 4);
-      context.stroke();
-      context.fillStyle = "#ffffff";
-      context.beginPath();
-      context.arc(shootingStar.x, shootingStar.y, 2.5, 0, Math.PI * 2);
-      context.fill();
-      context.restore();
-    }
+function drawMilkywayShootingStars(context: CanvasRenderingContext2D, time: number) {
+  const shootingStars = [
+    { x: 335, y: 82, phase: 0 },
+    { x: 835, y: 233, phase: 1.8 },
+    { x: 580, y: 185, phase: 3.4 },
+  ];
+  for (const shootingStar of shootingStars) {
+    const blink = Math.pow(Math.max(0, Math.sin(time * 2.8 + shootingStar.phase)), 7);
+    if (blink < 0.08) continue;
+
+    context.save();
+    context.globalAlpha = blink;
+    context.shadowColor = "#fff4c2";
+    context.shadowBlur = 18 * blink;
+    context.strokeStyle = "#fff7d5";
+    context.lineWidth = 2;
+    context.beginPath();
+    context.moveTo(shootingStar.x - 7, shootingStar.y);
+    context.lineTo(shootingStar.x + 7, shootingStar.y);
+    context.moveTo(shootingStar.x, shootingStar.y - 7);
+    context.lineTo(shootingStar.x, shootingStar.y + 7);
+    context.moveTo(shootingStar.x - 4, shootingStar.y - 4);
+    context.lineTo(shootingStar.x + 4, shootingStar.y + 4);
+    context.moveTo(shootingStar.x + 4, shootingStar.y - 4);
+    context.lineTo(shootingStar.x - 4, shootingStar.y + 4);
+    context.stroke();
+    context.fillStyle = "#ffffff";
+    context.beginPath();
+    context.arc(shootingStar.x, shootingStar.y, 2.5, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
   }
 }
 
@@ -1169,11 +1169,7 @@ function drawWorld(
 ) {
   const waveTime = world.phase === "playing" ? world.elapsed : timestamp / 1000;
   if (theme.id === "galaxy") {
-    drawGalaxyBackground(
-      context,
-      timestamp / 1000,
-      dragonSkin.id === "milkyway",
-    );
+    drawGalaxyBackground(context, timestamp / 1000);
   } else {
   const sky = context.createLinearGradient(0, 0, 0, HEIGHT);
   sky.addColorStop(0, theme.sky[0]);
@@ -1324,6 +1320,10 @@ function drawWorld(
   context.stroke();
   }
 
+  if (dragonSkin.id === "milkyway") {
+    drawMilkywayShootingStars(context, timestamp / 1000);
+  }
+
   if (dragonSkin.id === "dragonfruit") {
     drawFruitRain(context, timestamp / 1000, world.dragonY);
   }
@@ -1354,12 +1354,7 @@ function FlyingDragonGame() {
   const [collection, setCollection] = useState(loadDragonCollection);
   const [shopOpen, setShopOpen] = useState(false);
   const [tokenNotice, setTokenNotice] = useState("");
-  const [selectedTheme, setSelectedTheme] = useState<ThemeId>(
-    collection.equippedSkinId === "milkyway" &&
-      collection.unlockedThemeIds.includes("galaxy")
-      ? "galaxy"
-      : "sky",
-  );
+  const [selectedTheme, setSelectedTheme] = useState<ThemeId>("sky");
   const selectedThemeRef = useRef(
     WORLD_THEMES.find((theme) => theme.id === selectedTheme) ?? WORLD_THEMES[0],
   );
@@ -1401,13 +1396,6 @@ function FlyingDragonGame() {
     const alreadyUnlocked = collection.unlockedSkinIds.includes(skin.id);
     if (!alreadyUnlocked && collection.tokens < skin.cost) return;
 
-    if (skin.id === "milkyway") {
-      const galaxy = WORLD_THEMES.find((theme) => theme.id === "galaxy");
-      if (!galaxy) throw new Error("The Milkyway skin requires the Galaxy world.");
-      selectedThemeRef.current = galaxy;
-      setSelectedTheme(galaxy.id);
-    }
-
     setCollection((current) => {
       if (current.unlockedSkinIds.includes(skin.id)) {
         return { ...current, equippedSkinId: skin.id };
@@ -1418,10 +1406,6 @@ function FlyingDragonGame() {
         tokens: current.tokens - skin.cost,
         unlockedSkinIds: [...current.unlockedSkinIds, skin.id],
         equippedSkinId: skin.id,
-        unlockedThemeIds:
-          skin.id === "milkyway"
-            ? Array.from(new Set<ThemeId>([...current.unlockedThemeIds, "galaxy"]))
-            : current.unlockedThemeIds,
       };
     });
   };
