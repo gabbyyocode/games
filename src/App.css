@@ -2151,6 +2151,12 @@ h3 {
 }
 
 @media (max-width: 760px) {
+  .dragon-game .game-prompt h4.dragon-shop-title {
+    margin-bottom: 5px;
+    font-size: 18px;
+    letter-spacing: -0.5px;
+  }
+
   .site-shell {
     width: min(100% - 40px, 560px);
   }
@@ -2617,6 +2623,11 @@ h3 {
   .dragon-game .game-prompt h4 {
     margin-bottom: 2px;
     font-size: 15px;
+  }
+
+  .dragon-game .game-prompt h4.dragon-shop-title {
+    margin-bottom: 3px;
+    font-size: 16px;
   }
 
   .dragon-game .game-prompt-copy {

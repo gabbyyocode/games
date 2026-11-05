@@ -1728,7 +1728,7 @@ function FlyingDragonGame() {
               <p className="game-prompt-eyebrow">
                 {shopOpen ? "DRAGON COLLECTION" : phase === "ready" ? "A LITTLE ADVENTURE" : "ONE MORE FLIGHT?"}
               </p>
-              <h4>
+              <h4 className={shopOpen ? "dragon-shop-title" : undefined}>
                 {shopOpen
                   ? "Spend your dragon tokens"
                   : phase === "ready"
