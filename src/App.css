@@ -1647,11 +1647,43 @@ h3 {
 
 .dragon-shop-list {
   display: grid;
-  gap: 5px;
+  gap: 8px;
   max-height: min(28vh, 156px);
   margin: 0 0 9px;
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+
+.dragon-rarity {
+  display: grid;
+  gap: 4px;
+}
+
+.dragon-rarity h5 {
+  margin: 0;
+  padding: 3px 2px 2px;
+  color: #d7d1e8;
+  font-family: var(--font-display);
+  font-size: 8px;
+  letter-spacing: 1px;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.dragon-rarity-noob h5 {
+  color: #c8c3d5;
+}
+
+.dragon-rarity-epic h5 {
+  color: #8ed4ff;
+}
+
+.dragon-rarity-legendary h5 {
+  color: #ffd27b;
+}
+
+.dragon-rarity-ultra h5 {
+  color: #e6a8ff;
 }
 
 .dragon-shop-skin {

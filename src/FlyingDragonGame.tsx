@@ -18,13 +18,15 @@ const STORM_DANGER_SECONDS = 0.14;
 type Obstacle = {
   x: number;
   sprayTop: number;
+  fireHeight: number;
   passed: boolean;
 };
 
 type GamePhase = "ready" | "playing" | "over";
-type ThemeId = "sky" | "volcano" | "forest" | "ice" | "desert" | "night";
-type DragonSkinId = "classic" | "ember" | "moss" | "frost" | "royal" | "dragonfruit";
-type DragonAccessory = "flame" | "leaves" | "ice" | "crown" | "dragonfruit" | "none";
+type ThemeId = "sky" | "volcano" | "forest" | "ice" | "desert" | "night" | "galaxy";
+type DragonSkinId = "classic" | "ember" | "moss" | "frost" | "royal" | "dragonfruit" | "milkyway";
+type DragonAccessory = "flame" | "leaves" | "ice" | "crown" | "dragonfruit" | "milkyway" | "none";
+type DragonRarity = "Noob" | "Epic" | "Legendary" | "Ultra";
 
 type WorldTheme = {
   id: ThemeId;
@@ -44,6 +46,7 @@ type DragonSkin = {
   id: DragonSkinId;
   name: string;
   icon: string;
+  rarity: DragonRarity;
   cost: number;
   preview: string;
   body: string;
@@ -71,6 +74,7 @@ const DRAGON_SKINS: DragonSkin[] = [
     id: "classic",
     name: "Classic",
     icon: "🐉",
+    rarity: "Noob",
     cost: 0,
     preview: "#8279dc",
     body: "#756bd0",
@@ -87,6 +91,7 @@ const DRAGON_SKINS: DragonSkin[] = [
     id: "ember",
     name: "Ember",
     icon: "🔥",
+    rarity: "Epic",
     cost: 1,
     preview: "#e95c43",
     body: "#e95c43",
@@ -103,6 +108,7 @@ const DRAGON_SKINS: DragonSkin[] = [
     id: "moss",
     name: "Moss",
     icon: "🍃",
+    rarity: "Epic",
     cost: 2,
     preview: "#55a875",
     body: "#55a875",
@@ -119,6 +125,7 @@ const DRAGON_SKINS: DragonSkin[] = [
     id: "frost",
     name: "Frost",
     icon: "❄",
+    rarity: "Epic",
     cost: 3,
     preview: "#55b9d1",
     body: "#55b9d1",
@@ -135,6 +142,7 @@ const DRAGON_SKINS: DragonSkin[] = [
     id: "royal",
     name: "Royal",
     icon: "👑",
+    rarity: "Legendary",
     cost: 4,
     preview: "#ac62ce",
     body: "#ac62ce",
@@ -151,6 +159,7 @@ const DRAGON_SKINS: DragonSkin[] = [
     id: "dragonfruit",
     name: "Dragonfruit",
     icon: "🐉",
+    rarity: "Ultra",
     cost: 5,
     preview: "#f05b9e",
     body: "#f05b9e",
@@ -163,7 +172,26 @@ const DRAGON_SKINS: DragonSkin[] = [
     accent: "#a7db69",
     accessory: "dragonfruit",
   },
+  {
+    id: "milkyway",
+    name: "Milkyway",
+    icon: "🌌",
+    rarity: "Ultra",
+    cost: 6,
+    preview: "#171722",
+    body: "#171722",
+    bodyDark: "#080810",
+    wing: "#242432",
+    wingLine: "rgba(194, 180, 255, 0.7)",
+    belly: "#282238",
+    snout: "#30293f",
+    horn: "#c5b5ff",
+    accent: "#f3eaff",
+    accessory: "milkyway",
+  },
 ];
+
+const DRAGON_RARITIES: DragonRarity[] = ["Noob", "Epic", "Legendary", "Ultra"];
 
 const DEFAULT_DRAGON_COLLECTION: DragonCollection = {
   tokens: 0,
@@ -307,6 +335,19 @@ const WORLD_THEMES: WorldTheme[] = [
     sea: ["#557b9b", "#253b60"],
     cloud: "rgba(213, 222, 255, 0.58)",
   },
+  {
+    id: "galaxy",
+    name: "Galaxy",
+    icon: "🌌",
+    cost: 6,
+    sky: ["#100d2b", "#211747", "#0c1637"],
+    sun: "rgba(255, 255, 255, 0.9)",
+    sunGlow: "rgba(178, 126, 255, 0.22)",
+    far: "#28214b",
+    near: "#1c183d",
+    sea: ["#2a2458", "#10152f"],
+    cloud: "rgba(227, 216, 255, 0.65)",
+  },
 ];
 
 type Storm = {
@@ -333,9 +374,9 @@ function makeWorld(phase: GamePhase = "ready"): GameWorld {
     dragonY: HEIGHT / 2,
     velocity: 0,
     obstacles: [
-      { x: 820, sprayTop: 310, passed: false },
-      { x: 820 + WHALE_SPACING, sprayTop: 240, passed: false },
-      { x: 820 + WHALE_SPACING * 2, sprayTop: 280, passed: false },
+      { x: 820, sprayTop: 310, fireHeight: 105, passed: false },
+      { x: 820 + WHALE_SPACING, sprayTop: 240, fireHeight: 160, passed: false },
+      { x: 820 + WHALE_SPACING * 2, sprayTop: 280, fireHeight: 125, passed: false },
     ],
     score: 0,
     elapsed: 0,
@@ -443,7 +484,7 @@ function drawSpout(
   }
 }
 
-function drawStorm(context: CanvasRenderingContext2D, storm: Storm) {
+function drawStorm(context: CanvasRenderingContext2D, storm: Storm, galaxy = false) {
   const isWarning = storm.phase === "warning";
   const isStrike = storm.phase === "strike";
   const opacity = storm.phase === "fade" ? 1 - storm.elapsed / 0.38 : 1;
@@ -456,17 +497,61 @@ function drawStorm(context: CanvasRenderingContext2D, storm: Storm) {
   context.ellipse(storm.x, 145, 86, 13, 0, 0, Math.PI * 2);
   context.fill();
 
-  const cloud = context.createLinearGradient(storm.x - 75, 0, storm.x + 70, 0);
-  cloud.addColorStop(0, "#56536f");
-  cloud.addColorStop(0.55, "#39384f");
-  cloud.addColorStop(1, "#625c78");
-  context.fillStyle = cloud;
-  context.beginPath();
-  context.ellipse(storm.x, 117, 69, 25, 0, 0, Math.PI * 2);
-  context.ellipse(storm.x - 39, 110, 29, 27, 0, 0, Math.PI * 2);
-  context.ellipse(storm.x - 4, 97, 39, 36, 0, 0, Math.PI * 2);
-  context.ellipse(storm.x + 36, 108, 32, 29, 0, 0, Math.PI * 2);
-  context.fill();
+  if (galaxy) {
+    context.fillStyle = "rgba(54, 51, 91, 0.3)";
+    context.beginPath();
+    context.ellipse(storm.x, 123, 80, 14, 0, 0, Math.PI * 2);
+    context.fill();
+
+    context.fillStyle = "#58618e";
+    context.beginPath();
+    context.ellipse(storm.x, 108, 69, 16, 0, 0, Math.PI * 2);
+    context.fill();
+
+    const saucer = context.createLinearGradient(storm.x, 95, storm.x, 120);
+    saucer.addColorStop(0, "#dce9ff");
+    saucer.addColorStop(0.46, "#8da6d5");
+    saucer.addColorStop(1, "#4a5687");
+    context.fillStyle = saucer;
+    context.beginPath();
+    context.ellipse(storm.x, 112, 74, 13, 0, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = "#69799f";
+    context.beginPath();
+    context.ellipse(storm.x, 116, 48, 7, 0, 0, Math.PI);
+    context.fill();
+
+    const dome = context.createLinearGradient(storm.x, 80, storm.x, 105);
+    dome.addColorStop(0, "#d6fbff");
+    dome.addColorStop(1, "#6283bc");
+    context.fillStyle = dome;
+    context.beginPath();
+    context.ellipse(storm.x, 102, 29, 17, 0, Math.PI, Math.PI * 2);
+    context.fill();
+    for (const [lightX, color] of [
+      [storm.x - 48, "#ff6d8d"],
+      [storm.x - 17, "#ffe27a"],
+      [storm.x + 18, "#8dfff0"],
+      [storm.x + 49, "#ff6d8d"],
+    ] as const) {
+      context.fillStyle = color;
+      context.beginPath();
+      context.arc(lightX, 111, 3.2, 0, Math.PI * 2);
+      context.fill();
+    }
+  } else {
+    const cloud = context.createLinearGradient(storm.x - 75, 0, storm.x + 70, 0);
+    cloud.addColorStop(0, "#56536f");
+    cloud.addColorStop(0.55, "#39384f");
+    cloud.addColorStop(1, "#625c78");
+    context.fillStyle = cloud;
+    context.beginPath();
+    context.ellipse(storm.x, 117, 69, 25, 0, 0, Math.PI * 2);
+    context.ellipse(storm.x - 39, 110, 29, 27, 0, 0, Math.PI * 2);
+    context.ellipse(storm.x - 4, 97, 39, 36, 0, 0, Math.PI * 2);
+    context.ellipse(storm.x + 36, 108, 32, 29, 0, 0, Math.PI * 2);
+    context.fill();
+  }
 
   if (isWarning || isStrike) {
     const flash = isStrike ? 1 : 0.3 + Math.max(0, Math.sin(storm.elapsed * 16)) * 0.34;
@@ -654,6 +739,213 @@ function drawFruitRain(context: CanvasRenderingContext2D, time: number, dragonY:
   }
 }
 
+function drawGalaxyBackground(
+  context: CanvasRenderingContext2D,
+  time: number,
+  showShootingStars: boolean,
+) {
+  const space = context.createLinearGradient(0, 0, WIDTH, HEIGHT);
+  space.addColorStop(0, "#100d2b");
+  space.addColorStop(0.52, "#241747");
+  space.addColorStop(1, "#0b1737");
+  context.fillStyle = space;
+  context.fillRect(0, 0, WIDTH, HEIGHT);
+
+  const nebulae = [
+    { x: 205, y: 170, radius: 220, color: "rgba(133, 71, 196, 0.3)" },
+    { x: 675, y: 300, radius: 280, color: "rgba(48, 117, 204, 0.24)" },
+    { x: 475, y: 75, radius: 170, color: "rgba(226, 85, 180, 0.17)" },
+  ];
+  for (const nebula of nebulae) {
+    const glow = context.createRadialGradient(nebula.x, nebula.y, 0, nebula.x, nebula.y, nebula.radius);
+    glow.addColorStop(0, nebula.color);
+    glow.addColorStop(1, "rgba(20, 17, 54, 0)");
+    context.fillStyle = glow;
+    context.fillRect(nebula.x - nebula.radius, nebula.y - nebula.radius, nebula.radius * 2, nebula.radius * 2);
+  }
+
+  for (let star = 0; star < 100; star += 1) {
+    const x = (star * 173 + 47) % WIDTH;
+    const y = (star * 83 + 29) % HEIGHT;
+    const twinkle = 0.45 + 0.45 * (0.5 + 0.5 * Math.sin(time * 1.8 + star * 2.4));
+    context.globalAlpha = twinkle;
+    context.fillStyle = star % 9 === 0 ? "#d9c6ff" : "#ffffff";
+    context.beginPath();
+    context.arc(x, y, star % 11 === 0 ? 2 : 1, 0, Math.PI * 2);
+    context.fill();
+  }
+  context.globalAlpha = 1;
+
+  const planets = [
+    { x: 755, y: 145, radius: 41, color: "#db8b72", ring: "#f2c08a" },
+    { x: 470, y: 358, radius: 27, color: "#6d83d0", ring: "#b1a2ff" },
+    { x: 100, y: 330, radius: 17, color: "#64c4b8", ring: "#a9f1df" },
+  ];
+  for (const planet of planets) {
+    context.save();
+    context.translate(planet.x, planet.y);
+    context.rotate(-0.2);
+    context.strokeStyle = planet.ring;
+    context.globalAlpha = 0.78;
+    context.lineWidth = 5;
+    context.beginPath();
+    context.ellipse(0, 0, planet.radius * 1.55, planet.radius * 0.43, 0, 0, Math.PI * 2);
+    context.stroke();
+    const planetFill = context.createRadialGradient(
+      -planet.radius * 0.35,
+      -planet.radius * 0.38,
+      1,
+      0,
+      0,
+      planet.radius,
+    );
+    planetFill.addColorStop(0, "#fff3df");
+    planetFill.addColorStop(0.28, planet.color);
+    planetFill.addColorStop(1, "#2c2457");
+    context.globalAlpha = 1;
+    context.fillStyle = planetFill;
+    context.beginPath();
+    context.arc(0, 0, planet.radius, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
+  }
+
+  if (showShootingStars) {
+    const shootingStars = [
+      { x: 335, y: 82, phase: 0 },
+      { x: 835, y: 233, phase: 1.8 },
+      { x: 580, y: 185, phase: 3.4 },
+    ];
+    for (const shootingStar of shootingStars) {
+      const blink = Math.pow(Math.max(0, Math.sin(time * 2.8 + shootingStar.phase)), 7);
+      if (blink < 0.08) continue;
+
+      context.save();
+      context.globalAlpha = blink;
+      context.shadowColor = "#fff4c2";
+      context.shadowBlur = 18 * blink;
+      context.strokeStyle = "#fff7d5";
+      context.lineWidth = 2;
+      context.beginPath();
+      context.moveTo(shootingStar.x - 7, shootingStar.y);
+      context.lineTo(shootingStar.x + 7, shootingStar.y);
+      context.moveTo(shootingStar.x, shootingStar.y - 7);
+      context.lineTo(shootingStar.x, shootingStar.y + 7);
+      context.moveTo(shootingStar.x - 4, shootingStar.y - 4);
+      context.lineTo(shootingStar.x + 4, shootingStar.y + 4);
+      context.moveTo(shootingStar.x + 4, shootingStar.y - 4);
+      context.lineTo(shootingStar.x - 4, shootingStar.y + 4);
+      context.stroke();
+      context.fillStyle = "#ffffff";
+      context.beginPath();
+      context.arc(shootingStar.x, shootingStar.y, 2.5, 0, Math.PI * 2);
+      context.fill();
+      context.restore();
+    }
+  }
+}
+
+function drawSpaceship(
+  context: CanvasRenderingContext2D,
+  x: number,
+  time: number,
+  fireHeight: number,
+) {
+  const y = FLOOR_Y - 29;
+  const flamePulse = 0.68 + 0.32 * Math.sin(time * 16 + x * 0.04);
+
+  context.save();
+  context.translate(x + WHALE_WIDTH / 2, y);
+
+  const firePlume = context.createLinearGradient(0, -fireHeight, 0, -12);
+  firePlume.addColorStop(0, "rgba(255, 91, 48, 0)");
+  firePlume.addColorStop(0.35, "rgba(255, 112, 42, 0.72)");
+  firePlume.addColorStop(0.78, "rgba(255, 179, 54, 0.92)");
+  firePlume.addColorStop(1, "rgba(255, 244, 157, 0.98)");
+  context.fillStyle = firePlume;
+  context.shadowColor = "#ff7438";
+  context.shadowBlur = 18;
+  context.beginPath();
+  context.moveTo(-7, -13);
+  context.quadraticCurveTo(-19 - flamePulse * 5, -42, -8, -66);
+  context.quadraticCurveTo(-14, -fireHeight * 0.72, -2, -fireHeight);
+  context.quadraticCurveTo(3, -fireHeight * 0.72, 12, -75);
+  context.quadraticCurveTo(20 + flamePulse * 4, -48, 7, -13);
+  context.closePath();
+  context.fill();
+  context.shadowBlur = 0;
+
+  for (let spark = 0; spark < 6; spark += 1) {
+    const rise = (time * 0.72 + spark * 0.19 + x * 0.001) % 1;
+    const sparkY = -18 - rise * (fireHeight - 20);
+    const sparkX = Math.sin(time * 7 + spark * 1.9 + x * 0.01) * (3 + rise * 8);
+    context.globalAlpha = 1 - rise * 0.35;
+    context.fillStyle = spark % 2 === 0 ? "#fff6a6" : "#ff9b43";
+    context.beginPath();
+    context.ellipse(sparkX, sparkY, 2.5 + rise * 1.5, 5 + rise * 2, 0, 0, Math.PI * 2);
+    context.fill();
+  }
+  context.globalAlpha = 1;
+
+  const engineFlame = context.createLinearGradient(10, 0, 52, 0);
+  engineFlame.addColorStop(0, "rgba(255, 237, 129, 0.95)");
+  engineFlame.addColorStop(0.35, "rgba(255, 137, 67, 0.9)");
+  engineFlame.addColorStop(1, "rgba(255, 75, 96, 0)");
+  context.fillStyle = engineFlame;
+  context.globalAlpha = flamePulse;
+  context.beginPath();
+  context.moveTo(12, -9);
+  context.lineTo(53 + flamePulse * 8, -15);
+  context.lineTo(45, -5);
+  context.lineTo(56 + flamePulse * 8, 2);
+  context.lineTo(12, -1);
+  context.closePath();
+  context.fill();
+  context.globalAlpha = 1;
+
+  context.fillStyle = "#6976b9";
+  context.beginPath();
+  context.moveTo(18, -18);
+  context.lineTo(-28, -10);
+  context.lineTo(-51, -2);
+  context.lineTo(-26, 4);
+  context.lineTo(20, 12);
+  context.lineTo(52, 4);
+  context.lineTo(36, -4);
+  context.closePath();
+  context.fill();
+
+  const hull = context.createLinearGradient(0, -16, 0, 11);
+  hull.addColorStop(0, "#e3e8ff");
+  hull.addColorStop(0.4, "#8998d4");
+  hull.addColorStop(1, "#454d82");
+  context.fillStyle = hull;
+  context.beginPath();
+  context.moveTo(-53, -3);
+  context.lineTo(-18, -15);
+  context.lineTo(30, -10);
+  context.lineTo(43, -3);
+  context.lineTo(26, 6);
+  context.lineTo(-18, 10);
+  context.closePath();
+  context.fill();
+
+  context.fillStyle = "#242443";
+  context.beginPath();
+  context.ellipse(4, -7, 13, 7, -0.15, Math.PI, Math.PI * 2);
+  context.fill();
+  context.fillStyle = "#9ce9ff";
+  context.beginPath();
+  context.ellipse(4, -8, 9, 4, -0.15, Math.PI, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = "#ffcf74";
+  context.beginPath();
+  context.arc(-35, -2, 2, 0, Math.PI * 2);
+  context.fill();
+  context.restore();
+}
+
 function drawDragon(
   context: CanvasRenderingContext2D,
   y: number,
@@ -666,6 +958,11 @@ function drawDragon(
   context.save();
   context.translate(DRAGON_X, y);
   context.rotate(tilt);
+
+  if (skin.id === "milkyway") {
+    context.shadowColor = "rgba(181, 163, 255, 0.55)";
+    context.shadowBlur = 10;
+  }
 
   context.fillStyle = "rgba(42, 34, 69, 0.2)";
   context.beginPath();
@@ -693,6 +990,27 @@ function drawDragon(
   context.quadraticCurveTo(-29, -17, -15, 7);
   context.closePath();
   context.fill();
+  if (skin.id === "milkyway") {
+    context.save();
+    context.beginPath();
+    context.moveTo(1, 4);
+    context.quadraticCurveTo(-2, -40, -34, -42);
+    context.quadraticCurveTo(-29, -17, -15, 7);
+    context.closePath();
+    context.clip();
+    context.fillStyle = "rgba(244, 236, 255, 0.9)";
+    for (const [starX, starY, radius] of [
+      [-23, -29, 1.7],
+      [-14, -20, 1.2],
+      [-27, -12, 1],
+      [-9, -34, 1.2],
+    ]) {
+      context.beginPath();
+      context.arc(starX, starY, radius, 0, Math.PI * 2);
+      context.fill();
+    }
+    context.restore();
+  }
   context.strokeStyle = skin.wingLine;
   context.lineWidth = 2;
   context.beginPath();
@@ -707,6 +1025,26 @@ function drawDragon(
   context.beginPath();
   context.ellipse(-3, 3, 27, 19, -0.08, 0, Math.PI * 2);
   context.fill();
+  if (skin.id === "milkyway") {
+    context.save();
+    context.beginPath();
+    context.ellipse(-3, 3, 27, 19, -0.08, 0, Math.PI * 2);
+    context.clip();
+    context.fillStyle = "rgba(244, 236, 255, 0.92)";
+    for (const [starX, starY, radius] of [
+      [-20, -1, 1.5],
+      [-10, -8, 1],
+      [-9, 7, 1.2],
+      [0, -4, 1.6],
+      [6, 8, 1],
+      [12, -1, 1.2],
+    ]) {
+      context.beginPath();
+      context.arc(starX, starY, radius, 0, Math.PI * 2);
+      context.fill();
+    }
+    context.restore();
+  }
   context.fillStyle = skin.belly;
   context.beginPath();
   context.ellipse(-2, 14, 14, 6, 0, 0, Math.PI * 2);
@@ -829,6 +1167,14 @@ function drawWorld(
   theme: WorldTheme,
   dragonSkin: DragonSkin,
 ) {
+  const waveTime = world.phase === "playing" ? world.elapsed : timestamp / 1000;
+  if (theme.id === "galaxy") {
+    drawGalaxyBackground(
+      context,
+      timestamp / 1000,
+      dragonSkin.id === "milkyway",
+    );
+  } else {
   const sky = context.createLinearGradient(0, 0, 0, HEIGHT);
   sky.addColorStop(0, theme.sky[0]);
   sky.addColorStop(0.58, theme.sky[1]);
@@ -967,7 +1313,6 @@ function drawWorld(
   context.fillStyle = sea;
   context.fillRect(0, FLOOR_Y, WIDTH, HEIGHT - FLOOR_Y);
 
-  const waveTime = world.phase === "playing" ? world.elapsed : timestamp / 1000;
   context.strokeStyle = "rgba(255, 252, 245, 0.7)";
   context.lineWidth = 3;
   context.beginPath();
@@ -977,18 +1322,23 @@ function drawWorld(
     else context.lineTo(x, waveY);
   }
   context.stroke();
+  }
 
   if (dragonSkin.id === "dragonfruit") {
     drawFruitRain(context, timestamp / 1000, world.dragonY);
   }
 
   for (const obstacle of world.obstacles) {
-    drawWhale(context, obstacle.x);
-    drawSpout(context, obstacle, waveTime, world.storm !== null);
+    if (theme.id === "galaxy") {
+      drawSpaceship(context, obstacle.x, waveTime, obstacle.fireHeight);
+    } else {
+      drawWhale(context, obstacle.x);
+      drawSpout(context, obstacle, waveTime, world.storm !== null);
+    }
   }
 
   if (world.storm) {
-    drawStorm(context, world.storm);
+    drawStorm(context, world.storm, theme.id === "galaxy");
   }
 
   drawDragon(context, world.dragonY, world.velocity, world.elapsed, dragonSkin);
@@ -1004,8 +1354,15 @@ function FlyingDragonGame() {
   const [collection, setCollection] = useState(loadDragonCollection);
   const [shopOpen, setShopOpen] = useState(false);
   const [tokenNotice, setTokenNotice] = useState("");
-  const [selectedTheme, setSelectedTheme] = useState<ThemeId>("sky");
-  const selectedThemeRef = useRef(WORLD_THEMES[0]);
+  const [selectedTheme, setSelectedTheme] = useState<ThemeId>(
+    collection.equippedSkinId === "milkyway" &&
+      collection.unlockedThemeIds.includes("galaxy")
+      ? "galaxy"
+      : "sky",
+  );
+  const selectedThemeRef = useRef(
+    WORLD_THEMES.find((theme) => theme.id === selectedTheme) ?? WORLD_THEMES[0],
+  );
   const equippedSkinRef = useRef(DRAGON_SKINS[0]);
   const tokenNoticeTimerRef = useRef<number | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -1041,6 +1398,16 @@ function FlyingDragonGame() {
   };
 
   const selectOrBuySkin = (skin: DragonSkin) => {
+    const alreadyUnlocked = collection.unlockedSkinIds.includes(skin.id);
+    if (!alreadyUnlocked && collection.tokens < skin.cost) return;
+
+    if (skin.id === "milkyway") {
+      const galaxy = WORLD_THEMES.find((theme) => theme.id === "galaxy");
+      if (!galaxy) throw new Error("The Milkyway skin requires the Galaxy world.");
+      selectedThemeRef.current = galaxy;
+      setSelectedTheme(galaxy.id);
+    }
+
     setCollection((current) => {
       if (current.unlockedSkinIds.includes(skin.id)) {
         return { ...current, equippedSkinId: skin.id };
@@ -1051,6 +1418,10 @@ function FlyingDragonGame() {
         tokens: current.tokens - skin.cost,
         unlockedSkinIds: [...current.unlockedSkinIds, skin.id],
         equippedSkinId: skin.id,
+        unlockedThemeIds:
+          skin.id === "milkyway"
+            ? Array.from(new Set<ThemeId>([...current.unlockedThemeIds, "galaxy"]))
+            : current.unlockedThemeIds,
       };
     });
   };
@@ -1155,7 +1526,16 @@ function FlyingDragonGame() {
             obstacle.x + 8 < DRAGON_X + DRAGON_RADIUS &&
             obstacle.x + WHALE_WIDTH - 8 > DRAGON_X - DRAGON_RADIUS &&
             world.dragonY + DRAGON_RADIUS > FLOOR_Y - 46;
-          if (hitsSpray || hitsWhale) {
+          const hitsShip =
+            obstacle.x + 17 < DRAGON_X + DRAGON_RADIUS &&
+            obstacle.x + 122 > DRAGON_X - DRAGON_RADIUS &&
+            world.dragonY + DRAGON_RADIUS > FLOOR_Y - 44 &&
+            world.dragonY - DRAGON_RADIUS < FLOOR_Y - 19;
+          const hitsObstacle =
+            selectedThemeRef.current.id === "galaxy"
+              ? hitsShip
+              : hitsSpray || hitsWhale;
+          if (hitsObstacle) {
             finishGame();
             break;
           }
@@ -1214,6 +1594,7 @@ function FlyingDragonGame() {
           world.obstacles.push({
             x: lastObstacle.x + WHALE_SPACING,
             sprayTop: 200 + Math.random() * 130,
+            fireHeight: 90 + Math.random() * 90,
             passed: false,
           });
         }
@@ -1356,41 +1737,51 @@ function FlyingDragonGame() {
                   <p className="dragon-shop-balance">
                     🐉 {collection.tokens} {collection.tokens === 1 ? "token" : "tokens"}
                   </p>
-                  <div className="dragon-shop-list" role="group" aria-label="Dragon skins">
-                    {DRAGON_SKINS.map((skin) => {
-                      const unlocked = collection.unlockedSkinIds.includes(skin.id);
-                      const equipped = collection.equippedSkinId === skin.id;
+                  <div className="dragon-shop-list" aria-label="Dragon skins">
+                    {DRAGON_RARITIES.map((rarity) => {
+                      const skins = DRAGON_SKINS.filter((skin) => skin.rarity === rarity);
+                      if (skins.length === 0) return null;
+
                       return (
-                        <button
-                          key={skin.id}
-                          type="button"
-                          className={`dragon-shop-skin${equipped ? " is-equipped" : ""}`}
-                          aria-label={
-                            equipped
-                              ? `${skin.name}, equipped`
-                              : unlocked
-                                ? `Equip ${skin.name} dragon skin`
-                                : `Buy ${skin.name} dragon skin for ${skin.cost} tokens`
-                          }
-                          aria-pressed={equipped}
-                          disabled={!unlocked && collection.tokens < skin.cost}
-                          onPointerDown={(event) => event.stopPropagation()}
-                          onKeyDown={(event) => event.stopPropagation()}
-                          onClick={() => selectOrBuySkin(skin)}
-                        >
-                          <span
-                            className="dragon-shop-swatch"
-                            style={{ backgroundColor: skin.preview }}
-                            aria-hidden="true"
-                          />
-                          <span className="dragon-shop-name">
-                            <strong>{skin.icon} {skin.name}</strong>
-                            <small>{unlocked ? "Owned" : `${skin.cost} ${skin.cost === 1 ? "token" : "tokens"}`}</small>
-                          </span>
-                          <span className="dragon-shop-action">
-                            {equipped ? "Equipped" : unlocked ? "Equip" : "Buy"}
-                          </span>
-                        </button>
+                        <section className={`dragon-rarity dragon-rarity-${rarity.toLowerCase()}`} key={rarity}>
+                          <h5>{rarity} Dragons</h5>
+                          {skins.map((skin) => {
+                            const unlocked = collection.unlockedSkinIds.includes(skin.id);
+                            const equipped = collection.equippedSkinId === skin.id;
+                            return (
+                              <button
+                                key={skin.id}
+                                type="button"
+                                className={`dragon-shop-skin${equipped ? " is-equipped" : ""}`}
+                                aria-label={
+                                  equipped
+                                    ? `${skin.name}, equipped`
+                                    : unlocked
+                                      ? `Equip ${skin.name} dragon skin`
+                                      : `Buy ${skin.name} dragon skin for ${skin.cost} ${skin.cost === 1 ? "token" : "tokens"}`
+                                }
+                                aria-pressed={equipped}
+                                disabled={!unlocked && collection.tokens < skin.cost}
+                                onPointerDown={(event) => event.stopPropagation()}
+                                onKeyDown={(event) => event.stopPropagation()}
+                                onClick={() => selectOrBuySkin(skin)}
+                              >
+                                <span
+                                  className="dragon-shop-swatch"
+                                  style={{ backgroundColor: skin.preview }}
+                                  aria-hidden="true"
+                                />
+                                <span className="dragon-shop-name">
+                                  <strong>{skin.icon} {skin.name}</strong>
+                                  <small>{unlocked ? "Owned" : `${skin.cost} ${skin.cost === 1 ? "token" : "tokens"}`}</small>
+                                </span>
+                                <span className="dragon-shop-action">
+                                  {equipped ? "Equipped" : unlocked ? "Equip" : "Buy"}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </section>
                       );
                     })}
                   </div>
