@@ -22,6 +22,95 @@ type Obstacle = {
 };
 
 type GamePhase = "ready" | "playing" | "over";
+type ThemeId = "sky" | "volcano" | "forest" | "ice" | "desert" | "night";
+
+type WorldTheme = {
+  id: ThemeId;
+  name: string;
+  icon: string;
+  sky: [string, string, string];
+  sun: string;
+  sunGlow: string;
+  far: string;
+  near: string;
+  sea: [string, string];
+  cloud: string;
+};
+
+const WORLD_THEMES: WorldTheme[] = [
+  {
+    id: "sky",
+    name: "Sky",
+    icon: "☁",
+    sky: ["#f5b38f", "#f8d3a4", "#f3d9b1"],
+    sun: "rgba(255, 241, 190, 0.78)",
+    sunGlow: "rgba(255, 248, 224, 0.3)",
+    far: "#df9c91",
+    near: "#c57e91",
+    sea: ["#8eb8d6", "#3d6c98"],
+    cloud: "rgba(255, 247, 232, 0.72)",
+  },
+  {
+    id: "volcano",
+    name: "Volcano",
+    icon: "🌋",
+    sky: ["#4c315d", "#a24f59", "#f09b62"],
+    sun: "rgba(255, 190, 114, 0.88)",
+    sunGlow: "rgba(255, 112, 75, 0.28)",
+    far: "#704452",
+    near: "#493444",
+    sea: ["#607c91", "#293f5d"],
+    cloud: "rgba(255, 218, 183, 0.66)",
+  },
+  {
+    id: "forest",
+    name: "Forest",
+    icon: "🌲",
+    sky: ["#82c4b1", "#c5dba4", "#f5dfa8"],
+    sun: "rgba(255, 246, 187, 0.8)",
+    sunGlow: "rgba(255, 255, 218, 0.28)",
+    far: "#80a77b",
+    near: "#537d68",
+    sea: ["#82c5bb", "#3e7d83"],
+    cloud: "rgba(255, 255, 228, 0.72)",
+  },
+  {
+    id: "ice",
+    name: "Ice",
+    icon: "❄",
+    sky: ["#6898c3", "#add4e1", "#e7f0e9"],
+    sun: "rgba(255, 255, 244, 0.82)",
+    sunGlow: "rgba(230, 250, 255, 0.35)",
+    far: "#9fc4d2",
+    near: "#668fa7",
+    sea: ["#91c9dc", "#3f789d"],
+    cloud: "rgba(249, 255, 255, 0.8)",
+  },
+  {
+    id: "desert",
+    name: "Desert",
+    icon: "☀",
+    sky: ["#e77d55", "#f4b463", "#f8dda0"],
+    sun: "rgba(255, 241, 171, 0.86)",
+    sunGlow: "rgba(255, 242, 188, 0.3)",
+    far: "#e5aa6e",
+    near: "#c98259",
+    sea: ["#77b6c1", "#376f89"],
+    cloud: "rgba(255, 241, 208, 0.7)",
+  },
+  {
+    id: "night",
+    name: "Night",
+    icon: "☾",
+    sky: ["#171d46", "#394a78", "#7787a7"],
+    sun: "rgba(243, 244, 255, 0.88)",
+    sunGlow: "rgba(218, 228, 255, 0.22)",
+    far: "#4b5c82",
+    near: "#354267",
+    sea: ["#557b9b", "#253b60"],
+    cloud: "rgba(213, 222, 255, 0.58)",
+  },
+];
 
 type Storm = {
   x: number;
@@ -62,11 +151,12 @@ function drawCloud(
   x: number,
   y: number,
   scale: number,
+  color: string,
 ) {
   context.save();
   context.translate(x, y);
   context.scale(scale, scale);
-  context.fillStyle = "rgba(255, 247, 232, 0.72)";
+  context.fillStyle = color;
   context.beginPath();
   context.ellipse(0, 8, 39, 13, 0, 0, Math.PI * 2);
   context.ellipse(-18, 3, 18, 15, 0, 0, Math.PI * 2);
@@ -324,29 +414,121 @@ function drawWorld(
   context: CanvasRenderingContext2D,
   world: GameWorld,
   timestamp: number,
+  theme: WorldTheme,
 ) {
   const sky = context.createLinearGradient(0, 0, 0, HEIGHT);
-  sky.addColorStop(0, "#f5b38f");
-  sky.addColorStop(0.58, "#f8d3a4");
-  sky.addColorStop(1, "#f3d9b1");
+  sky.addColorStop(0, theme.sky[0]);
+  sky.addColorStop(0.58, theme.sky[1]);
+  sky.addColorStop(1, theme.sky[2]);
   context.fillStyle = sky;
   context.fillRect(0, 0, WIDTH, HEIGHT);
 
-  context.fillStyle = "rgba(255, 241, 190, 0.78)";
+  if (theme.id === "night") {
+    context.fillStyle = "rgba(255, 255, 255, 0.72)";
+    for (let star = 0; star < 36; star += 1) {
+      const x = (star * 173 + 47) % WIDTH;
+      const y = (star * 83 + 29) % 310;
+      context.globalAlpha = 0.45 + ((star * 13) % 50) / 100;
+      context.beginPath();
+      context.arc(x, y, star % 5 === 0 ? 2 : 1, 0, Math.PI * 2);
+      context.fill();
+    }
+    context.globalAlpha = 1;
+  }
+
+  context.fillStyle = theme.sun;
   context.beginPath();
   context.arc(770, 108, 48, 0, Math.PI * 2);
   context.fill();
-  context.fillStyle = "rgba(255, 248, 224, 0.3)";
+  context.fillStyle = theme.sunGlow;
   context.beginPath();
   context.arc(770, 108, 66, 0, Math.PI * 2);
   context.fill();
 
   const drift = world.phase === "playing" ? world.elapsed * 16 : timestamp * 0.012;
-  drawCloud(context, 130 - (drift % 1120), 116, 0.82);
-  drawCloud(context, 495 - ((drift * 0.66) % 1120), 205, 0.58);
-  drawCloud(context, 930 - ((drift * 0.8) % 1120), 92, 0.72);
+  drawCloud(context, 130 - (drift % 1120), 116, 0.82, theme.cloud);
+  drawCloud(context, 495 - ((drift * 0.66) % 1120), 205, 0.58, theme.cloud);
+  drawCloud(context, 930 - ((drift * 0.8) % 1120), 92, 0.72, theme.cloud);
 
-  context.fillStyle = "#df9c91";
+  if (theme.id === "volcano") {
+    for (const [x, peak] of [[145, 270], [480, 236], [815, 285]]) {
+      context.fillStyle = "#493548";
+      context.beginPath();
+      context.moveTo(x - 180, 407);
+      context.lineTo(x - 86, peak + 74);
+      context.lineTo(x - 26, peak);
+      context.lineTo(x + 24, peak + 55);
+      context.lineTo(x + 72, peak + 34);
+      context.lineTo(x + 180, 407);
+      context.closePath();
+      context.fill();
+      context.fillStyle = "#f4a16a";
+      context.beginPath();
+      context.ellipse(x - 26, peak + 4, 17, 5, 0, 0, Math.PI * 2);
+      context.fill();
+      context.strokeStyle = "rgba(255, 122, 74, 0.9)";
+      context.lineWidth = 4;
+      context.beginPath();
+      context.moveTo(x - 36, peak + 25);
+      context.lineTo(x - 52, peak + 64);
+      context.moveTo(x - 4, peak + 28);
+      context.lineTo(x + 16, peak + 69);
+      context.stroke();
+    }
+  } else if (theme.id === "forest") {
+    for (let tree = 0; tree < 17; tree += 1) {
+      const x = tree * 62 - 12;
+      const base = 419 - (tree % 3) * 13;
+      const height = 88 + (tree % 4) * 15;
+      context.fillStyle = tree % 2 === 0 ? "#426d61" : "#5c8869";
+      context.beginPath();
+      context.moveTo(x - 27, base);
+      context.lineTo(x, base - height);
+      context.lineTo(x + 27, base);
+      context.closePath();
+      context.fill();
+      context.fillRect(x - 3, base - 4, 6, 12);
+    }
+  } else if (theme.id === "ice") {
+    for (const [x, peak] of [[90, 270], [355, 222], [670, 257], [900, 235]]) {
+      context.fillStyle = "#729eb4";
+      context.beginPath();
+      context.moveTo(x - 150, 415);
+      context.lineTo(x, peak);
+      context.lineTo(x + 142, 415);
+      context.closePath();
+      context.fill();
+      context.fillStyle = "rgba(248, 255, 255, 0.92)";
+      context.beginPath();
+      context.moveTo(x, peak);
+      context.lineTo(x - 36, peak + 67);
+      context.lineTo(x - 8, peak + 54);
+      context.lineTo(x + 15, peak + 83);
+      context.lineTo(x + 35, peak + 64);
+      context.closePath();
+      context.fill();
+    }
+  } else if (theme.id === "desert") {
+    context.fillStyle = "#d3925e";
+    context.beginPath();
+    context.moveTo(0, 388);
+    context.quadraticCurveTo(160, 283, 342, 388);
+    context.quadraticCurveTo(535, 480, 730, 364);
+    context.quadraticCurveTo(848, 310, WIDTH, 377);
+    context.lineTo(WIDTH, FLOOR_Y);
+    context.lineTo(0, FLOOR_Y);
+    context.fill();
+    for (const x of [165, 565, 875]) {
+      context.fillStyle = "#527b68";
+      context.fillRect(x - 4, 341, 8, 63);
+      context.fillRect(x - 18, 355, 12, 8);
+      context.fillRect(x - 18, 344, 7, 20);
+      context.fillRect(x + 5, 367, 12, 8);
+      context.fillRect(x + 10, 355, 7, 20);
+    }
+  }
+
+  context.fillStyle = theme.far;
   context.beginPath();
   context.moveTo(0, 383);
   context.quadraticCurveTo(145, 319, 286, 382);
@@ -356,7 +538,7 @@ function drawWorld(
   context.lineTo(0, FLOOR_Y);
   context.fill();
 
-  context.fillStyle = "#c57e91";
+  context.fillStyle = theme.near;
   context.beginPath();
   context.moveTo(0, 423);
   context.quadraticCurveTo(150, 378, 303, 431);
@@ -367,8 +549,8 @@ function drawWorld(
   context.fill();
 
   const sea = context.createLinearGradient(0, FLOOR_Y, 0, HEIGHT);
-  sea.addColorStop(0, "#8eb8d6");
-  sea.addColorStop(1, "#3d6c98");
+  sea.addColorStop(0, theme.sea[0]);
+  sea.addColorStop(1, theme.sea[1]);
   context.fillStyle = sea;
   context.fillRect(0, FLOOR_Y, WIDTH, HEIGHT - FLOOR_Y);
 
@@ -402,6 +584,8 @@ function FlyingDragonGame() {
   const [phase, setPhase] = useState<GamePhase>("ready");
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(0);
+  const [selectedTheme, setSelectedTheme] = useState<ThemeId>("sky");
+  const selectedThemeRef = useRef(WORLD_THEMES[0]);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isFallbackFullscreen, setIsFallbackFullscreen] = useState(false);
   const autoFullscreenAttempted = useRef(false);
@@ -549,7 +733,7 @@ function FlyingDragonGame() {
         }
       }
 
-      drawWorld(context, world, timestamp);
+      drawWorld(context, world, timestamp, selectedThemeRef.current);
       frameId = window.requestAnimationFrame(animate);
     };
 
@@ -660,9 +844,29 @@ function FlyingDragonGame() {
               <h4>{phase === "ready" ? "Ready, little dragon?" : "The sky is still yours."}</h4>
               <p className="game-prompt-copy">
                 {phase === "ready"
-                  ? "Storm at 10! Fly low to dodge the lightning."
+                  ? "Choose a world, then fly low to dodge the storm at 10."
                   : `You flew past ${score} ${score === 1 ? "whale" : "whales"}. Give it another go!`}
               </p>
+              <div className="dragon-theme-picker" role="group" aria-label="Choose a flying world">
+                {WORLD_THEMES.map((theme) => (
+                  <button
+                    key={theme.id}
+                    type="button"
+                    aria-label={`Choose ${theme.name} world`}
+                    aria-pressed={selectedTheme === theme.id}
+                    className={selectedTheme === theme.id ? "is-selected" : ""}
+                    onPointerDown={(event) => event.stopPropagation()}
+                    onKeyDown={(event) => event.stopPropagation()}
+                    onClick={() => {
+                      selectedThemeRef.current = theme;
+                      setSelectedTheme(theme.id);
+                    }}
+                  >
+                    <span aria-hidden="true">{theme.icon}</span>
+                    {theme.name}
+                  </button>
+                ))}
+              </div>
               <button className="button button-primary game-start" onClick={startGame}>
                 {phase === "ready" ? "Let’s fly" : "Fly again"} <span aria-hidden="true">→</span>
               </button>

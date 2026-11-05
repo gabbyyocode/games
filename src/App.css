@@ -1522,6 +1522,49 @@ h3 {
   line-height: 1.6;
 }
 
+.dragon-theme-picker {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+  margin: 0 0 13px;
+}
+
+.dragon-theme-picker button {
+  min-width: 0;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px;
+  color: #ddd5ff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.dragon-theme-picker button span {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.dragon-theme-picker button:hover,
+.dragon-theme-picker button.is-selected {
+  color: #fff7e8;
+  background: rgba(199, 191, 255, 0.2);
+  border-color: #c7bfff;
+}
+
+.dragon-theme-picker button:focus-visible {
+  outline: 2px solid #fff7e8;
+  outline-offset: 2px;
+}
+
 .game-start {
   min-height: 40px;
   gap: 14px;
@@ -2222,9 +2265,25 @@ h3 {
 
   .game-prompt-copy {
     max-width: 220px;
-    margin-bottom: 8px;
+    margin-bottom: 7px;
     font-size: 9px;
     line-height: 1.4;
+  }
+
+  .dragon-theme-picker {
+    gap: 3px;
+    margin-bottom: 8px;
+  }
+
+  .dragon-theme-picker button {
+    min-height: 34px;
+    gap: 3px;
+    padding: 3px 1px;
+    font-size: 7px;
+  }
+
+  .dragon-theme-picker button span {
+    font-size: 11px;
   }
 
   .game-prompt-eyebrow {
@@ -2243,6 +2302,43 @@ h3 {
 
   .game-controls {
     margin-top: 6px;
+  }
+
+  .dragon-game .game-prompt {
+    padding: 6px 10px 5px;
+  }
+
+  .dragon-game .game-prompt-eyebrow {
+    margin-bottom: 2px;
+  }
+
+  .dragon-game .game-prompt h4 {
+    margin-bottom: 2px;
+    font-size: 15px;
+  }
+
+  .dragon-game .game-prompt-copy {
+    margin-bottom: 4px;
+    font-size: 7px;
+    line-height: 1.2;
+  }
+
+  .dragon-theme-picker {
+    gap: 3px;
+    margin-bottom: 5px;
+  }
+
+  .dragon-theme-picker button {
+    min-height: 32px;
+  }
+
+  .dragon-game .game-start {
+    min-height: 36px;
+  }
+
+  .dragon-game .game-controls {
+    margin-top: 3px;
+    font-size: 6px;
   }
 
   .game-fullscreen-button {
