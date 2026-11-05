@@ -1786,52 +1786,71 @@ function FlyingDragonGame() {
                       ? "Worlds cost tokens. Earn one every 10 points!"
                       : `You flew past ${score} ${score === 1 ? "whale" : "whales"}. Every 10 points earns a dragon token!`}
                   </p>
-                  <div className="dragon-theme-picker" role="group" aria-label="Choose a flying world">
-                    {WORLD_THEMES.map((theme) => (
+                  {phase === "ready" ? (
+                    <>
+                      <div className="dragon-theme-picker" role="group" aria-label="Choose a flying world">
+                        {WORLD_THEMES.map((theme) => (
+                          <button
+                            key={theme.id}
+                            type="button"
+                            aria-label={
+                              collection.unlockedThemeIds.includes(theme.id)
+                                ? `Choose ${theme.name} world`
+                                : `Unlock ${theme.name} world for ${theme.cost} ${theme.cost === 1 ? "token" : "tokens"}`
+                            }
+                            aria-pressed={selectedTheme === theme.id}
+                            className={[
+                              selectedTheme === theme.id ? "is-selected" : "",
+                              collection.unlockedThemeIds.includes(theme.id) ? "" : "is-locked",
+                            ].filter(Boolean).join(" ")}
+                            disabled={
+                              !collection.unlockedThemeIds.includes(theme.id) &&
+                              collection.tokens < theme.cost
+                            }
+                            onPointerDown={(event) => event.stopPropagation()}
+                            onKeyDown={(event) => event.stopPropagation()}
+                            onClick={() => selectOrBuyTheme(theme)}
+                          >
+                            <span aria-hidden="true">{theme.icon}</span>
+                            {theme.name}
+                            {!collection.unlockedThemeIds.includes(theme.id) && (
+                              <span className="dragon-theme-cost">{theme.cost} 🐉</span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
                       <button
-                        key={theme.id}
+                        className="dragon-shop-open"
                         type="button"
-                        aria-label={
-                          collection.unlockedThemeIds.includes(theme.id)
-                            ? `Choose ${theme.name} world`
-                            : `Unlock ${theme.name} world for ${theme.cost} ${theme.cost === 1 ? "token" : "tokens"}`
-                        }
-                        aria-pressed={selectedTheme === theme.id}
-                        className={[
-                          selectedTheme === theme.id ? "is-selected" : "",
-                          collection.unlockedThemeIds.includes(theme.id) ? "" : "is-locked",
-                        ].filter(Boolean).join(" ")}
-                        disabled={
-                          !collection.unlockedThemeIds.includes(theme.id) &&
-                          collection.tokens < theme.cost
-                        }
                         onPointerDown={(event) => event.stopPropagation()}
                         onKeyDown={(event) => event.stopPropagation()}
-                        onClick={() => selectOrBuyTheme(theme)}
+                        onClick={() => setShopOpen(true)}
                       >
-                        <span aria-hidden="true">{theme.icon}</span>
-                        {theme.name}
-                        {!collection.unlockedThemeIds.includes(theme.id) && (
-                          <span className="dragon-theme-cost">{theme.cost} 🐉</span>
-                        )}
+                        🐉 Dragon skins <span>{collection.tokens} tokens</span>
                       </button>
-                    ))}
-                  </div>
-                  <button
-                    className="dragon-shop-open"
-                    type="button"
-                    onPointerDown={(event) => event.stopPropagation()}
-                    onKeyDown={(event) => event.stopPropagation()}
-                    onClick={() => setShopOpen(true)}
-                  >
-                    🐉 Dragon skins <span>{collection.tokens} tokens</span>
-                  </button>
-                  <button className="button button-primary game-start" onClick={startGame}>
-                    {phase === "ready" ? "Let’s fly" : "Fly again"} <span aria-hidden="true">→</span>
-                  </button>
+                      <button className="button button-primary game-start" onClick={startGame}>
+                        Let’s fly <span aria-hidden="true">→</span>
+                      </button>
+                    </>
+                  ) : (
+                    <div className="game-over-actions">
+                      <button className="button button-primary game-start" onClick={startGame}>
+                        Fly again
+                      </button>
+                      <button
+                        className="button game-store-visit"
+                        type="button"
+                        onPointerDown={(event) => event.stopPropagation()}
+                        onKeyDown={(event) => event.stopPropagation()}
+                        onClick={() => setShopOpen(true)}
+                      >
+                        🐉 Visit Dragon Store
+                      </button>
+                    </div>
+                  )}
                 </>
               )}
-              {!shopOpen && (
+              {!shopOpen && phase === "ready" && (
                 <p className="game-controls">
                   <span className="game-keyboard-hint">SPACE · ↑</span>
                   <span className="game-tap-hint">TAP ANYWHERE TO FLAP</span>

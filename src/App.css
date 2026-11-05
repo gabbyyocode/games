@@ -1775,6 +1775,39 @@ h3 {
   font-size: 15px;
 }
 
+.game-over-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.game-over-actions .game-start,
+.game-store-visit {
+  min-width: 0;
+  min-height: 40px;
+  gap: 6px;
+  padding: 0 8px;
+  font-size: 9px;
+}
+
+.game-store-visit {
+  color: #ffdf91;
+  background: rgba(255, 223, 145, 0.08);
+  border: 1px solid rgba(255, 223, 145, 0.32);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.game-store-visit:hover {
+  background: rgba(255, 223, 145, 0.15);
+  border-color: rgba(255, 223, 145, 0.55);
+}
+
+.game-store-visit:focus-visible {
+  outline: 2px solid #fff7e8;
+  outline-offset: 2px;
+}
+
 .game-controls {
   display: flex;
   justify-content: center;
