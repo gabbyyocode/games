@@ -23,9 +23,9 @@ type Obstacle = {
 };
 
 type GamePhase = "ready" | "playing" | "over";
-type ThemeId = "sky" | "volcano" | "forest" | "ice" | "desert" | "night" | "galaxy";
-type DragonSkinId = "classic" | "ember" | "moss" | "frost" | "royal" | "dragonfruit" | "milkyway";
-type DragonAccessory = "flame" | "leaves" | "ice" | "crown" | "dragonfruit" | "milkyway" | "none";
+type ThemeId = "sky" | "volcano" | "forest" | "ice" | "desert" | "night" | "galaxy" | "football" | "wind" | "jungle";
+type DragonSkinId = "classic" | "ember" | "moss" | "frost" | "royal" | "football" | "gangsta" | "rudolph" | "wind" | "tuxedo" | "dragonfruit" | "milkyway" | "scansoriopterygid";
+type DragonAccessory = "flame" | "leaves" | "ice" | "crown" | "spots" | "gangsta" | "deer" | "wind" | "cat" | "dragonfruit" | "milkyway" | "scansoriopterygid" | "none";
 type DragonRarity = "Noob" | "Epic" | "Legendary" | "Ultra";
 
 type WorldTheme = {
@@ -156,6 +156,91 @@ const DRAGON_SKINS: DragonSkin[] = [
     accessory: "crown",
   },
   {
+    id: "football",
+    name: "Football",
+    icon: "⚽",
+    rarity: "Legendary",
+    cost: 5,
+    preview: "#f6f5f0",
+    body: "#f6f5f0",
+    bodyDark: "#292b30",
+    wing: "#fffefa",
+    wingLine: "rgba(72, 75, 82, 0.72)",
+    belly: "#e8e7e2",
+    snout: "#fffefa",
+    horn: "#34363b",
+    accent: "#17191d",
+    accessory: "spots",
+  },
+  {
+    id: "gangsta",
+    name: "Gangsta",
+    icon: "🐉",
+    rarity: "Ultra",
+    cost: 15,
+    preview: "#f0bf38",
+    body: "#e9c94f",
+    bodyDark: "#977222",
+    wing: "#f3db7b",
+    wingLine: "rgba(255, 247, 196, 0.82)",
+    belly: "#f8e9ae",
+    snout: "#f2d86c",
+    horn: "#fff1bd",
+    accent: "#e8ac28",
+    accessory: "gangsta",
+  },
+  {
+    id: "rudolph",
+    name: "Rudolph",
+    icon: "🐉",
+    rarity: "Legendary",
+    cost: 7,
+    preview: "#a85d36",
+    body: "#a85d36",
+    bodyDark: "#70402d",
+    wing: "#c27a4b",
+    wingLine: "rgba(255, 220, 174, 0.78)",
+    belly: "#f1d5a5",
+    snout: "#bc714b",
+    horn: "#ead9b5",
+    accent: "#e52538",
+    accessory: "deer",
+  },
+  {
+    id: "wind",
+    name: "Wind",
+    icon: "🐉",
+    rarity: "Epic",
+    cost: 4,
+    preview: "#b9f1ed",
+    body: "#b9f1ed",
+    bodyDark: "#6bb7c1",
+    wing: "#e4ffff",
+    wingLine: "rgba(255, 255, 255, 0.9)",
+    belly: "#e9fbf4",
+    snout: "#a6e2e4",
+    horn: "#edffff",
+    accent: "#75cfd2",
+    accessory: "wind",
+  },
+  {
+    id: "tuxedo",
+    name: "Muffin",
+    icon: "🐉",
+    rarity: "Ultra",
+    cost: 30,
+    preview: "#20242b",
+    body: "#20242b",
+    bodyDark: "#090a0d",
+    wing: "#20242b",
+    wingLine: "rgba(16, 18, 23, 0.9)",
+    belly: "#f5f4ef",
+    snout: "#f5f4ef",
+    horn: "#20242b",
+    accent: "#f5f4ef",
+    accessory: "cat",
+  },
+  {
     id: "dragonfruit",
     name: "Dragonfruit",
     icon: "🐉",
@@ -188,6 +273,23 @@ const DRAGON_SKINS: DragonSkin[] = [
     horn: "#c5b5ff",
     accent: "#f3eaff",
     accessory: "milkyway",
+  },
+  {
+    id: "scansoriopterygid",
+    name: "Scansoriopterygid",
+    icon: "🪶",
+    rarity: "Legendary",
+    cost: 8,
+    preview: "#493b35",
+    body: "#493b35",
+    bodyDark: "#211d20",
+    wing: "#675044",
+    wingLine: "rgba(126, 91, 67, 0.9)",
+    belly: "#78604b",
+    snout: "#5c453b",
+    horn: "#3a2a27",
+    accent: "#a34d35",
+    accessory: "scansoriopterygid",
   },
 ];
 
@@ -348,6 +450,45 @@ const WORLD_THEMES: WorldTheme[] = [
     sea: ["#2a2458", "#10152f"],
     cloud: "rgba(227, 216, 255, 0.65)",
   },
+  {
+    id: "football",
+    name: "Football Match",
+    icon: "⚽",
+    cost: 5,
+    sky: ["#101d3c", "#28385a", "#42546a"],
+    sun: "rgba(255, 255, 255, 0.9)",
+    sunGlow: "rgba(196, 220, 255, 0.25)",
+    far: "#354b55",
+    near: "#293d3b",
+    sea: ["#398f55", "#17613e"],
+    cloud: "rgba(255, 255, 255, 0.7)",
+  },
+  {
+    id: "wind",
+    name: "Wind",
+    icon: "🍃",
+    cost: 4,
+    sky: ["#86d8ed", "#b8edf0", "#e7f8e9"],
+    sun: "rgba(255, 255, 222, 0.86)",
+    sunGlow: "rgba(255, 255, 235, 0.34)",
+    far: "#a6d9a8",
+    near: "#72bd91",
+    sea: ["#80d4c2", "#42a78f"],
+    cloud: "rgba(255, 255, 255, 0.86)",
+  },
+  {
+    id: "jungle",
+    name: "Jungle",
+    icon: "🌴",
+    cost: 5,
+    sky: ["#69bdc0", "#b4d987", "#d9e78f"],
+    sun: "rgba(255, 243, 164, 0.62)",
+    sunGlow: "rgba(234, 255, 179, 0.2)",
+    far: "#4d8c59",
+    near: "#286d4b",
+    sea: ["#49a574", "#1f694f"],
+    cloud: "rgba(236, 255, 216, 0.62)",
+  },
 ];
 
 type Storm = {
@@ -447,6 +588,83 @@ function drawWhale(context: CanvasRenderingContext2D, x: number) {
   context.beginPath();
   context.arc(x + 26.8, y - 32.8, 0.9, 0, Math.PI * 2);
   context.fill();
+}
+
+function drawSoccerBall(
+  context: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  radius: number,
+  rotation = 0,
+) {
+  context.save();
+  context.translate(x, y);
+  context.rotate(rotation);
+  context.fillStyle = "#f8f7f0";
+  context.strokeStyle = "#25282c";
+  context.lineWidth = Math.max(1, radius * 0.12);
+  context.beginPath();
+  context.arc(0, 0, radius, 0, Math.PI * 2);
+  context.fill();
+  context.stroke();
+
+  context.fillStyle = "#25282c";
+  context.beginPath();
+  context.moveTo(-radius * 0.28, -radius * 0.12);
+  context.lineTo(-radius * 0.12, -radius * 0.34);
+  context.lineTo(radius * 0.14, -radius * 0.32);
+  context.lineTo(radius * 0.3, -radius * 0.08);
+  context.lineTo(radius * 0.2, radius * 0.2);
+  context.lineTo(-radius * 0.1, radius * 0.27);
+  context.closePath();
+  context.fill();
+  for (let patch = 0; patch < 5; patch += 1) {
+    const angle = (patch * Math.PI * 2) / 5 - Math.PI / 2;
+    context.beginPath();
+    context.arc(
+      Math.cos(angle) * radius * 0.69,
+      Math.sin(angle) * radius * 0.69,
+      radius * 0.16,
+      0,
+      Math.PI * 2,
+    );
+    context.fill();
+  }
+  context.restore();
+}
+
+function drawFootballShot(
+  context: CanvasRenderingContext2D,
+  obstacle: Obstacle,
+  time: number,
+) {
+  const shotX = obstacle.x + BLOWHOLE_X;
+  const top = sprayTopY(obstacle, time);
+  const range = FLOOR_Y - 57 - top;
+  const trail = context.createLinearGradient(shotX, FLOOR_Y - 52, shotX, top);
+  trail.addColorStop(0, "rgba(255, 246, 197, 0.42)");
+  trail.addColorStop(1, "rgba(255, 246, 197, 0.02)");
+  context.strokeStyle = trail;
+  context.lineWidth = 5;
+  context.beginPath();
+  context.moveTo(shotX, FLOOR_Y - 52);
+  context.quadraticCurveTo(shotX + 8, (FLOOR_Y + top) / 2, shotX, top);
+  context.stroke();
+
+  for (let shot = 0; shot < 3; shot += 1) {
+    const progress = (time * 0.9 + shot / 3 + obstacle.x * 0.002) % 1;
+    const y = FLOOR_Y - 57 - progress * range;
+    const x = shotX + Math.sin(progress * Math.PI * 1.5 + shot) * 7;
+    context.globalAlpha = 1 - progress * 0.24;
+    drawSoccerBall(context, x, y, 9, time * 3 + shot);
+  }
+  context.globalAlpha = 1;
+
+  context.fillStyle = "rgba(12, 31, 24, 0.25)";
+  context.beginPath();
+  context.ellipse(shotX + 2, FLOOR_Y - 9, 20, 6, 0, 0, Math.PI * 2);
+  context.fill();
+  drawSoccerBall(context, shotX, FLOOR_Y - 31, 21, time * 0.4 + obstacle.x * 0.01);
 }
 
 function drawSpout(
@@ -811,6 +1029,284 @@ function drawGalaxyBackground(
 
 }
 
+function drawFootballBackground(context: CanvasRenderingContext2D, time: number) {
+  const sky = context.createLinearGradient(0, 0, 0, HEIGHT);
+  sky.addColorStop(0, "#111a35");
+  sky.addColorStop(0.58, "#273451");
+  sky.addColorStop(1, "#43515a");
+  context.fillStyle = sky;
+  context.fillRect(0, 0, WIDTH, HEIGHT);
+
+  for (const lightX of [125, 835]) {
+    const glow = context.createRadialGradient(lightX, 165, 4, lightX, 165, 260);
+    glow.addColorStop(0, "rgba(255, 246, 204, 0.28)");
+    glow.addColorStop(1, "rgba(255, 246, 204, 0)");
+    context.fillStyle = glow;
+    context.fillRect(lightX - 260, 0, 520, 425);
+  }
+
+  context.fillStyle = "#182238";
+  context.beginPath();
+  context.moveTo(0, 91);
+  context.lineTo(124, 132);
+  context.lineTo(304, 171);
+  context.lineTo(656, 171);
+  context.lineTo(836, 132);
+  context.lineTo(WIDTH, 91);
+  context.lineTo(WIDTH, 355);
+  context.lineTo(0, 355);
+  context.closePath();
+  context.fill();
+
+  const crowdColors = ["#f3d16f", "#ef765f", "#e7edf2", "#62b5cb", "#b99ae9"];
+  for (let row = 0; row < 6; row += 1) {
+    const y = 190 + row * 25;
+    context.fillStyle = row % 2 === 0 ? "#33415a" : "#29364e";
+    context.fillRect(0, y + 10, WIDTH, 17);
+    for (let seat = 0; seat < 42; seat += 1) {
+      const x = seat * 24 + ((row % 2) * 11);
+      const colorIndex = (seat * 7 + row * 11) % crowdColors.length;
+      context.globalAlpha = 0.72 + 0.2 * (0.5 + 0.5 * Math.sin(time * 3 + seat * 1.7 + row));
+      context.fillStyle = crowdColors[colorIndex];
+      context.beginPath();
+      context.arc(x + 8, y + ((seat + row) % 3), 3.2, 0, Math.PI * 2);
+      context.fill();
+    }
+  }
+  context.globalAlpha = 1;
+
+  for (const lightX of [125, 835]) {
+    context.strokeStyle = "#78839a";
+    context.lineWidth = 6;
+    context.beginPath();
+    context.moveTo(lightX, 181);
+    context.lineTo(lightX, 114);
+    context.stroke();
+    context.fillStyle = "#fff6cf";
+    context.shadowColor = "#fff1bd";
+    context.shadowBlur = 20;
+    context.fillRect(lightX - 28, 105, 56, 10);
+    context.shadowBlur = 0;
+  }
+
+  const pitch = context.createLinearGradient(0, 362, 0, HEIGHT);
+  pitch.addColorStop(0, "#45a85a");
+  pitch.addColorStop(1, "#19733e");
+  context.fillStyle = pitch;
+  context.fillRect(0, 362, WIDTH, HEIGHT - 362);
+  for (let stripe = 0; stripe < 8; stripe += 1) {
+    context.fillStyle = stripe % 2 === 0 ? "rgba(196, 241, 161, 0.08)" : "rgba(0, 49, 31, 0.08)";
+    context.fillRect(stripe * 120, 362, 120, HEIGHT - 362);
+  }
+
+  context.strokeStyle = "rgba(239, 255, 228, 0.88)";
+  context.lineWidth = 3;
+  context.beginPath();
+  context.moveTo(0, 371);
+  context.lineTo(WIDTH, 371);
+  context.moveTo(480, 371);
+  context.lineTo(480, HEIGHT);
+  context.ellipse(480, 435, 47, 42, 0, 0, Math.PI * 2);
+  context.stroke();
+
+  context.strokeStyle = "rgba(248, 255, 241, 0.92)";
+  context.lineWidth = 5;
+  context.strokeRect(663, 302, 151, 129);
+  context.lineWidth = 2;
+  for (let netX = 674; netX < 814; netX += 18) {
+    context.beginPath();
+    context.moveTo(netX, 305);
+    context.lineTo(netX, 428);
+    context.stroke();
+  }
+  for (let netY = 316; netY < 430; netY += 17) {
+    context.beginPath();
+    context.moveTo(665, netY);
+    context.lineTo(812, netY);
+    context.stroke();
+  }
+}
+
+function drawWindBackground(context: CanvasRenderingContext2D, time: number) {
+  const sky = context.createLinearGradient(0, 0, 0, HEIGHT);
+  sky.addColorStop(0, "#86d8ed");
+  sky.addColorStop(0.58, "#c0eef0");
+  sky.addColorStop(1, "#f0f8e6");
+  context.fillStyle = sky;
+  context.fillRect(0, 0, WIDTH, HEIGHT);
+
+  const sunGlow = context.createRadialGradient(765, 105, 8, 765, 105, 115);
+  sunGlow.addColorStop(0, "rgba(255, 255, 221, 0.88)");
+  sunGlow.addColorStop(1, "rgba(255, 255, 221, 0)");
+  context.fillStyle = sunGlow;
+  context.fillRect(650, 0, 230, 220);
+  context.fillStyle = "rgba(255, 255, 226, 0.86)";
+  context.beginPath();
+  context.arc(765, 105, 42, 0, Math.PI * 2);
+  context.fill();
+
+  drawCloud(context, 180 - ((time * 22) % 1150), 115, 0.9, "rgba(255, 255, 255, 0.88)");
+  drawCloud(context, 570 - ((time * 30) % 1200), 198, 0.65, "rgba(255, 255, 255, 0.76)");
+  drawCloud(context, 1040 - ((time * 18) % 1250), 95, 0.72, "rgba(255, 255, 255, 0.82)");
+
+  for (let gust = 0; gust < 9; gust += 1) {
+    const lane = gust % 5;
+    const x = ((time * (80 + (gust % 3) * 24) + gust * 151) % (WIDTH + 220)) - 110;
+    const y = 85 + lane * 49 + Math.sin(time * 1.4 + gust) * 9;
+    context.globalAlpha = 0.2 + (gust % 3) * 0.06;
+    context.strokeStyle = gust % 2 === 0 ? "#ffffff" : "#7dcbd4";
+    context.lineWidth = 2 + (gust % 2);
+    context.lineCap = "round";
+    context.beginPath();
+    context.moveTo(x, y);
+    context.bezierCurveTo(x + 24, y - 10, x + 47, y + 10, x + 72, y);
+    context.bezierCurveTo(x + 96, y - 9, x + 117, y + 6, x + 142, y - 2);
+    context.stroke();
+  }
+  context.globalAlpha = 1;
+
+  drawCloud(context, 120 - ((time * 13) % 1200), 356, 1.15, "rgba(255, 255, 255, 0.38)");
+  drawCloud(context, 690 - ((time * 17) % 1300), 332, 0.9, "rgba(255, 255, 255, 0.34)");
+
+  const horizon = context.createLinearGradient(0, 390, 0, HEIGHT);
+  horizon.addColorStop(0, "rgba(143, 213, 218, 0.24)");
+  horizon.addColorStop(1, "#69bdc2");
+  context.fillStyle = horizon;
+  context.fillRect(0, 390, WIDTH, HEIGHT - 390);
+  context.strokeStyle = "rgba(242, 255, 250, 0.72)";
+  context.lineWidth = 3;
+  context.beginPath();
+  for (let x = 0; x <= WIDTH; x += 8) {
+    const waveY = FLOOR_Y + 5 + Math.sin((x + time * 80) / 26) * 3;
+    if (x === 0) context.moveTo(x, waveY);
+    else context.lineTo(x, waveY);
+  }
+  context.stroke();
+}
+
+function drawJungleBackground(context: CanvasRenderingContext2D, time: number) {
+  const sky = context.createLinearGradient(0, 0, 0, FLOOR_Y);
+  sky.addColorStop(0, "#4aa9a0");
+  sky.addColorStop(0.58, "#a9d77d");
+  sky.addColorStop(1, "#e5dc83");
+  context.fillStyle = sky;
+  context.fillRect(0, 0, WIDTH, HEIGHT);
+
+  const sunGlow = context.createRadialGradient(746, 137, 8, 746, 137, 142);
+  sunGlow.addColorStop(0, "rgba(255, 246, 165, 0.55)");
+  sunGlow.addColorStop(1, "rgba(255, 246, 165, 0)");
+  context.fillStyle = sunGlow;
+  context.fillRect(600, 0, 290, 300);
+  context.fillStyle = "rgba(255, 240, 158, 0.75)";
+  context.beginPath();
+  context.arc(746, 137, 35, 0, Math.PI * 2);
+  context.fill();
+
+  context.fillStyle = "#397a55";
+  context.beginPath();
+  context.moveTo(0, 305);
+  context.quadraticCurveTo(174, 245, 340, 313);
+  context.quadraticCurveTo(527, 240, 716, 308);
+  context.quadraticCurveTo(866, 250, WIDTH, 300);
+  context.lineTo(WIDTH, FLOOR_Y);
+  context.lineTo(0, FLOOR_Y);
+  context.closePath();
+  context.fill();
+
+  for (let tree = 0; tree < 12; tree += 1) {
+    const x = tree * 94 - 20;
+    const trunkTop = 190 + (tree % 4) * 22;
+    const trunkWidth = 23 + (tree % 3) * 7;
+    context.fillStyle = tree % 2 === 0 ? "#563a26" : "#70472b";
+    context.fillRect(x, trunkTop, trunkWidth, FLOOR_Y - trunkTop);
+    context.fillStyle = "#a0723e";
+    context.fillRect(x + 5, trunkTop, 5, FLOOR_Y - trunkTop);
+
+    const crownX = x + trunkWidth / 2;
+    const crownY = trunkTop - 15;
+    context.fillStyle = tree % 2 === 0 ? "#17623b" : "#207744";
+    context.beginPath();
+    context.ellipse(crownX, crownY, 62, 33, 0, 0, Math.PI * 2);
+    context.ellipse(crownX - 35, crownY + 9, 37, 28, -0.3, 0, Math.PI * 2);
+    context.ellipse(crownX + 34, crownY + 10, 39, 27, 0.3, 0, Math.PI * 2);
+    context.ellipse(crownX, crownY - 20, 38, 29, 0, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = tree % 2 === 0 ? "#3d9a4f" : "#4ca84c";
+    for (let frond = 0; frond < 5; frond += 1) {
+      const frondX = crownX - 44 + frond * 22;
+      context.beginPath();
+      context.ellipse(frondX, crownY - 9 - (frond % 2) * 8, 18, 7, -0.35 + frond * 0.15, 0, Math.PI * 2);
+      context.fill();
+    }
+
+    for (let branch = 0; branch < 3; branch += 1) {
+      const leafX = x + (branch - 1) * 24;
+      const leafY = trunkTop + branch * 34;
+      context.fillStyle = (tree + branch) % 2 === 0 ? "#1f754b" : "#2b8a50";
+      context.beginPath();
+      context.ellipse(leafX, leafY, 34, 15, -0.5 + branch * 0.35, 0, Math.PI * 2);
+      context.fill();
+      context.strokeStyle = "rgba(183, 226, 115, 0.55)";
+      context.lineWidth = 2;
+      context.beginPath();
+      context.moveTo(leafX - 24, leafY + 9);
+      context.lineTo(leafX + 24, leafY - 9);
+      context.stroke();
+    }
+
+    const vineLength = 54 + (tree % 4) * 18;
+    const vineX = x + trunkWidth + 7;
+    context.strokeStyle = "#77a64a";
+    context.lineWidth = 3;
+    context.beginPath();
+    context.moveTo(vineX, trunkTop);
+    context.bezierCurveTo(vineX + 12, trunkTop + vineLength * 0.35, vineX - 13, trunkTop + vineLength * 0.7, vineX + 3, trunkTop + vineLength);
+    context.stroke();
+    for (let leaf = 0; leaf < 3; leaf += 1) {
+      const leafY = trunkTop + 18 + leaf * 22;
+      context.fillStyle = leaf % 2 === 0 ? "#a3cc55" : "#5caa50";
+      context.beginPath();
+      context.ellipse(vineX + (leaf % 2 === 0 ? 8 : -8), leafY, 8, 4, leaf % 2 === 0 ? 0.6 : -0.6, 0, Math.PI * 2);
+      context.fill();
+    }
+  }
+
+  context.fillStyle = "rgba(33, 99, 61, 0.78)";
+  context.beginPath();
+  context.moveTo(0, 0);
+  context.quadraticCurveTo(112, 82 + Math.sin(time) * 4, 225, 28);
+  context.quadraticCurveTo(346, 103, 470, 24);
+  context.quadraticCurveTo(597, 90, 724, 19);
+  context.quadraticCurveTo(859, 96, WIDTH, 24);
+  context.lineTo(WIDTH, 0);
+  context.closePath();
+  context.fill();
+
+  for (let leaf = 0; leaf < 18; leaf += 1) {
+    const x = (leaf * 71 + 23) % WIDTH;
+    const y = 16 + (leaf % 4) * 17 + Math.sin(time * 1.4 + leaf) * 3;
+    context.fillStyle = leaf % 2 === 0 ? "#58a94c" : "#79bd4f";
+    context.beginPath();
+    context.ellipse(x, y, 24, 8, Math.sin(leaf) * 0.3, 0, Math.PI * 2);
+    context.fill();
+  }
+
+  const water = context.createLinearGradient(0, FLOOR_Y, 0, HEIGHT);
+  water.addColorStop(0, "#49a574");
+  water.addColorStop(1, "#1f694f");
+  context.fillStyle = water;
+  context.fillRect(0, FLOOR_Y, WIDTH, HEIGHT - FLOOR_Y);
+  context.strokeStyle = "rgba(223, 255, 191, 0.55)";
+  context.lineWidth = 3;
+  context.beginPath();
+  for (let x = 0; x <= WIDTH; x += 8) {
+    const waterY = FLOOR_Y + 5 + Math.sin((x + time * 80) / 26) * 3;
+    if (x === 0) context.moveTo(x, waterY);
+    else context.lineTo(x, waterY);
+  }
+  context.stroke();
+}
+
 function drawMilkywayShootingStars(context: CanvasRenderingContext2D, time: number) {
   const shootingStars = [
     { x: 335, y: 82, phase: 0 },
@@ -952,6 +1448,7 @@ function drawDragon(
   velocity: number,
   elapsed: number,
   skin: DragonSkin,
+  glowTime: number,
 ) {
   const tilt = Math.max(-0.42, Math.min(0.48, velocity / 1150));
   const wingBeat = Math.sin(elapsed * 10) * 0.24;
@@ -962,6 +1459,9 @@ function drawDragon(
   if (skin.id === "milkyway") {
     context.shadowColor = "rgba(181, 163, 255, 0.55)";
     context.shadowBlur = 10;
+  } else if (skin.accessory === "gangsta") {
+    context.shadowColor = "rgba(255, 166, 12, 1)";
+    context.shadowBlur = 30 + (Math.sin(glowTime * 4) + 1) * 12;
   }
 
   context.fillStyle = "rgba(42, 34, 69, 0.2)";
@@ -975,7 +1475,19 @@ function drawDragon(
   context.quadraticCurveTo(-43, 21, -48, 7);
   context.quadraticCurveTo(-30, 18, -21, -2);
   context.fill();
-  context.fillStyle = skin.accent;
+  if (skin.accessory === "scansoriopterygid") {
+    context.strokeStyle = skin.bodyDark;
+    context.lineWidth = 2;
+    context.lineCap = "round";
+    for (let feather = 0; feather < 3; feather += 1) {
+      context.beginPath();
+      context.moveTo(-26 + feather * 3, 5 + feather * 2);
+      context.quadraticCurveTo(-39 - feather * 3, 4 + feather * 3, -54 - feather * 4, 1 + feather * 5);
+      context.stroke();
+    }
+  }
+  context.fillStyle =
+    skin.accessory === "deer" || skin.accessory === "cat" ? skin.bodyDark : skin.accent;
   context.beginPath();
   context.arc(-48, 7, 4, 0, Math.PI * 2);
   context.fill();
@@ -990,6 +1502,49 @@ function drawDragon(
   context.quadraticCurveTo(-29, -17, -15, 7);
   context.closePath();
   context.fill();
+  if (skin.accessory === "scansoriopterygid") {
+    context.save();
+    context.beginPath();
+    context.moveTo(1, 4);
+    context.quadraticCurveTo(-2, -40, -34, -42);
+    context.quadraticCurveTo(-29, -17, -15, 7);
+    context.closePath();
+    context.clip();
+    context.strokeStyle = skin.bodyDark;
+    context.lineWidth = 2.5;
+    context.lineCap = "round";
+    context.beginPath();
+    context.moveTo(-5, 1);
+    context.quadraticCurveTo(-20, -23, -38, -40);
+    context.moveTo(-7, 2);
+    context.quadraticCurveTo(-22, -9, -31, -23);
+    context.stroke();
+    context.strokeStyle = skin.bodyDark;
+    context.lineWidth = 2;
+    for (let feather = 0; feather < 4; feather += 1) {
+      context.beginPath();
+      context.moveTo(-9 - feather * 4, 1 - feather * 3);
+      context.quadraticCurveTo(-21 - feather * 5, -12 - feather * 4, -30 - feather * 2, -17 - feather * 6);
+      context.stroke();
+    }
+    context.restore();
+  }
+  if (skin.accessory === "spots") {
+    context.save();
+    context.beginPath();
+    context.moveTo(1, 4);
+    context.quadraticCurveTo(-2, -40, -34, -42);
+    context.quadraticCurveTo(-29, -17, -15, 7);
+    context.closePath();
+    context.clip();
+    context.fillStyle = skin.accent;
+    for (const [spotX, spotY, radius] of [[-25, -30, 4], [-16, -18, 3], [-27, -8, 2.5]]) {
+      context.beginPath();
+      context.arc(spotX, spotY, radius, 0, Math.PI * 2);
+      context.fill();
+    }
+    context.restore();
+  }
   if (skin.id === "milkyway") {
     context.save();
     context.beginPath();
@@ -1025,6 +1580,45 @@ function drawDragon(
   context.beginPath();
   context.ellipse(-3, 3, 27, 19, -0.08, 0, Math.PI * 2);
   context.fill();
+  if (skin.accessory === "scansoriopterygid") {
+    context.fillStyle = skin.bodyDark;
+    context.beginPath();
+    context.moveTo(-25, -9);
+    context.lineTo(-22, -18);
+    context.lineTo(-16, -11);
+    context.lineTo(-11, -21);
+    context.lineTo(-6, -12);
+    context.lineTo(0, -20);
+    context.lineTo(5, -10);
+    context.lineTo(12, -16);
+    context.lineTo(10, -5);
+    context.closePath();
+    context.fill();
+  }
+  if (skin.accessory === "cat") {
+    context.save();
+    context.beginPath();
+    context.ellipse(-3, 3, 27, 19, -0.08, 0, Math.PI * 2);
+    context.clip();
+    context.fillStyle = skin.accent;
+    context.beginPath();
+    context.ellipse(6, 8, 15, 11, -0.2, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
+  }
+  if (skin.accessory === "spots") {
+    context.save();
+    context.beginPath();
+    context.ellipse(-3, 3, 27, 19, -0.08, 0, Math.PI * 2);
+    context.clip();
+    context.fillStyle = skin.accent;
+    for (const [spotX, spotY, radius] of [[-20, -4, 5], [-5, -9, 4], [10, -5, 4], [20, 2, 2.5]]) {
+      context.beginPath();
+      context.arc(spotX, spotY, radius, 0, Math.PI * 2);
+      context.fill();
+    }
+    context.restore();
+  }
   if (skin.id === "milkyway") {
     context.save();
     context.beginPath();
@@ -1064,20 +1658,109 @@ function drawDragon(
   context.beginPath();
   context.ellipse(18, -6, 19, 16, 0.08, 0, Math.PI * 2);
   context.fill();
-  context.fillStyle = skin.snout;
-  context.beginPath();
-  context.ellipse(31, 1, 12, 8, 0.08, 0, Math.PI * 2);
-  context.fill();
+  if (skin.accessory === "cat") {
+    context.fillStyle = skin.accent;
+    context.beginPath();
+    context.moveTo(7, -17);
+    context.lineTo(9, -34);
+    context.lineTo(21, -22);
+    context.closePath();
+    context.moveTo(22, -21);
+    context.lineTo(34, -35);
+    context.lineTo(34, -15);
+    context.closePath();
+    context.fill();
+    context.fillStyle = "#b8a7b3";
+    context.beginPath();
+    context.moveTo(11, -21);
+    context.lineTo(12, -29);
+    context.lineTo(18, -22);
+    context.closePath();
+    context.moveTo(27, -22);
+    context.lineTo(32, -29);
+    context.lineTo(32, -20);
+    context.closePath();
+    context.fill();
+  }
+  if (skin.accessory === "scansoriopterygid") {
+    context.fillStyle = skin.snout;
+    context.beginPath();
+    context.moveTo(24, -4);
+    context.lineTo(44, -3);
+    context.lineTo(50, 1);
+    context.lineTo(43, 5);
+    context.lineTo(27, 5);
+    context.closePath();
+    context.fill();
+    context.fillStyle = "#f3dfb7";
+    for (const toothX of [31, 38, 44]) {
+      context.beginPath();
+      context.moveTo(toothX, 4);
+      context.lineTo(toothX + 2, 9);
+      context.lineTo(toothX + 4, 4);
+      context.closePath();
+      context.fill();
+    }
+    context.fillStyle = skin.bodyDark;
+    context.beginPath();
+    context.ellipse(43, -1, 1.6, 1, 0, 0, Math.PI * 2);
+    context.fill();
+  } else {
+    context.fillStyle = skin.snout;
+    context.beginPath();
+    context.ellipse(31, 1, 12, 8, 0.08, 0, Math.PI * 2);
+    context.fill();
+  }
+  if (skin.accessory === "gangsta") {
+    context.fillStyle = "#e99932";
+    context.beginPath();
+    context.moveTo(29, -1);
+    context.quadraticCurveTo(43, -3, 45, 2);
+    context.quadraticCurveTo(39, 7, 29, 4);
+    context.closePath();
+    context.fill();
+  }
 
-  context.fillStyle = skin.horn;
-  context.beginPath();
-  context.moveTo(8, -18);
-  context.lineTo(5, -30);
-  context.quadraticCurveTo(16, -25, 17, -15);
-  context.moveTo(20, -19);
-  context.lineTo(24, -29);
-  context.quadraticCurveTo(30, -23, 27, -15);
-  context.fill();
+  if (skin.accessory === "cat") {
+    context.fillStyle = skin.horn;
+    context.beginPath();
+    context.moveTo(8, -18);
+    context.lineTo(9, -33);
+    context.lineTo(19, -19);
+    context.closePath();
+    context.moveTo(21, -19);
+    context.lineTo(31, -34);
+    context.lineTo(30, -16);
+    context.closePath();
+    context.fill();
+  } else if (skin.accessory === "deer") {
+    context.strokeStyle = skin.horn;
+    context.lineWidth = 3;
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.beginPath();
+    context.moveTo(13, -17);
+    context.lineTo(10, -27);
+    context.lineTo(4, -33);
+    context.moveTo(10, -27);
+    context.lineTo(12, -35);
+    context.moveTo(25, -17);
+    context.lineTo(29, -27);
+    context.lineTo(35, -33);
+    context.moveTo(29, -27);
+    context.lineTo(27, -35);
+    context.stroke();
+  } else if (skin.accessory !== "scansoriopterygid") {
+    context.fillStyle = skin.horn;
+    context.beginPath();
+    context.moveTo(8, -18);
+    context.lineTo(5, -30);
+    context.quadraticCurveTo(16, -25, 17, -15);
+    context.moveTo(20, -19);
+    context.lineTo(24, -29);
+    context.quadraticCurveTo(30, -23, 27, -15);
+    context.fill();
+  }
 
   if (skin.accessory === "flame") {
     context.fillStyle = skin.accent;
@@ -1108,6 +1791,24 @@ function drawDragon(
     context.lineTo(15, -8);
     context.closePath();
     context.fill();
+  } else if (skin.accessory === "wind") {
+    context.strokeStyle = skin.accent;
+    context.lineWidth = 2;
+    context.lineCap = "round";
+    context.beginPath();
+    context.moveTo(-20, -1);
+    context.bezierCurveTo(-11, -9, -3, -8, -5, -2);
+    context.bezierCurveTo(-7, 2, -13, 1, -12, -3);
+    context.moveTo(-8, 8);
+    context.bezierCurveTo(1, 0, 10, 2, 8, 8);
+    context.bezierCurveTo(6, 12, 0, 11, 1, 7);
+    context.stroke();
+    context.beginPath();
+    context.moveTo(-26, -8);
+    context.quadraticCurveTo(-18, -13, -10, -10);
+    context.moveTo(-1, -12);
+    context.quadraticCurveTo(6, -16, 14, -11);
+    context.stroke();
   } else if (skin.accessory === "crown") {
     context.fillStyle = skin.accent;
     context.beginPath();
@@ -1121,6 +1822,49 @@ function drawDragon(
     context.closePath();
     context.fill();
     context.fillRect(12, -20, 20, 3);
+  } else if (skin.accessory === "deer") {
+    context.fillStyle = skin.accent;
+    context.beginPath();
+    context.arc(41, 2, 5.5, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = "rgba(255, 235, 235, 0.9)";
+    context.beginPath();
+    context.arc(39, 0, 1.8, 0, Math.PI * 2);
+    context.fill();
+  } else if (skin.accessory === "gangsta") {
+    context.fillStyle = "#29253e";
+    context.beginPath();
+    context.moveTo(6, -19);
+    context.quadraticCurveTo(8, -39, 25, -36);
+    context.quadraticCurveTo(35, -33, 35, -21);
+    context.lineTo(39, -17);
+    context.quadraticCurveTo(22, -13, 7, -17);
+    context.closePath();
+    context.fill();
+    context.fillStyle = "#e8ac28";
+    context.font = "bold 5px sans-serif";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText("GANGSTA", 22, -27);
+
+    context.strokeStyle = "#d99b19";
+    context.lineWidth = 2;
+    context.beginPath();
+    context.moveTo(-2, 8);
+    context.lineTo(-2, 15);
+    context.stroke();
+    context.fillStyle = "#f4c343";
+    context.strokeStyle = "#a87312";
+    context.lineWidth = 1;
+    context.beginPath();
+    context.roundRect(-17, 14, 30, 16, 3);
+    context.fill();
+    context.stroke();
+    context.fillStyle = "#543c12";
+    context.font = "bold 6px sans-serif";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText("Gangster", -2, 22);
   } else if (skin.accessory === "dragonfruit") {
     context.fillStyle = skin.accent;
     context.beginPath();
@@ -1145,18 +1889,79 @@ function drawDragon(
     }
   }
 
-  context.fillStyle = "#29253e";
-  context.beginPath();
-  context.arc(22, -9, 3, 0, Math.PI * 2);
-  context.fill();
-  context.fillStyle = "#fff8e9";
-  context.beginPath();
-  context.arc(23, -10, 1, 0, Math.PI * 2);
-  context.fill();
+  if (skin.accessory === "scansoriopterygid") {
+    context.shadowColor = "#ff1717";
+    context.shadowBlur = 16;
+    context.fillStyle = "#ff2424";
+    context.beginPath();
+    context.ellipse(22, -9, 3.2, 2.4, -0.15, 0, Math.PI * 2);
+    context.fill();
+    context.shadowBlur = 0;
+    context.fillStyle = "#241716";
+    context.fillRect(22, -11, 1, 4);
+    context.strokeStyle = skin.bodyDark;
+    context.lineWidth = 3;
+    context.beginPath();
+    context.moveTo(16, -14);
+    context.lineTo(27, -13);
+    context.stroke();
+  } else {
+    context.fillStyle = "#29253e";
+    context.beginPath();
+    context.arc(22, -9, 3, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = "#fff8e9";
+    context.beginPath();
+    context.arc(23, -10, 1, 0, Math.PI * 2);
+    context.fill();
+  }
   context.fillStyle = skin.bodyDark;
   context.beginPath();
   context.arc(35, -1, 1.5, 0, Math.PI * 2);
   context.fill();
+  if (skin.accessory === "cat") {
+    context.strokeStyle = skin.accent;
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(31, 4);
+    context.lineTo(43, 1);
+    context.moveTo(31, 7);
+    context.lineTo(43, 8);
+    context.moveTo(31, 10);
+    context.lineTo(41, 14);
+    context.stroke();
+    context.fillStyle = "#e99cae";
+    context.beginPath();
+    context.moveTo(34, 2);
+    context.lineTo(39, 2);
+    context.lineTo(36.5, 5);
+    context.closePath();
+    context.fill();
+  }
+  context.restore();
+}
+
+function drawMuffinScratch(context: CanvasRenderingContext2D, y: number, elapsed: number) {
+  const cycle = elapsed % 1.35;
+  if (cycle > 1.1) return;
+
+  const progress = 0.65 + Math.abs(Math.sin(cycle * Math.PI * 6)) * 0.35;
+  const fade = cycle < 0.9 ? 1 : (1.1 - cycle) / 0.2;
+  context.save();
+  context.globalAlpha = fade * 0.78;
+  context.strokeStyle = "#fff";
+  context.lineWidth = 3.5;
+  context.lineCap = "round";
+  context.shadowColor = "rgba(255, 255, 255, 0.75)";
+  context.shadowBlur = 7;
+  for (let index = 0; index < 3; index += 1) {
+    const x = DRAGON_X + 55 + index * 10;
+    const startY = y - 34 + index * 2;
+    context.beginPath();
+    context.moveTo(x, startY + 11 * progress);
+    context.lineTo(x + 15 * progress, startY - 11 * progress);
+    context.stroke();
+  }
   context.restore();
 }
 
@@ -1170,6 +1975,12 @@ function drawWorld(
   const waveTime = world.phase === "playing" ? world.elapsed : timestamp / 1000;
   if (theme.id === "galaxy") {
     drawGalaxyBackground(context, timestamp / 1000);
+  } else if (theme.id === "football") {
+    drawFootballBackground(context, timestamp / 1000);
+  } else if (theme.id === "wind") {
+    drawWindBackground(context, timestamp / 1000);
+  } else if (theme.id === "jungle") {
+    drawJungleBackground(context, timestamp / 1000);
   } else {
   const sky = context.createLinearGradient(0, 0, 0, HEIGHT);
   sky.addColorStop(0, theme.sky[0]);
@@ -1331,6 +2142,8 @@ function drawWorld(
   for (const obstacle of world.obstacles) {
     if (theme.id === "galaxy") {
       drawSpaceship(context, obstacle.x, waveTime, obstacle.fireHeight);
+    } else if (theme.id === "football") {
+      drawFootballShot(context, obstacle, waveTime);
     } else {
       drawWhale(context, obstacle.x);
       drawSpout(context, obstacle, waveTime, world.storm !== null);
@@ -1341,7 +2154,11 @@ function drawWorld(
     drawStorm(context, world.storm, theme.id === "galaxy");
   }
 
-  drawDragon(context, world.dragonY, world.velocity, world.elapsed, dragonSkin);
+  if (dragonSkin.accessory === "cat") {
+    drawMuffinScratch(context, world.dragonY, timestamp / 1000);
+  }
+
+  drawDragon(context, world.dragonY, world.velocity, world.elapsed, dragonSkin, timestamp / 1000);
 }
 
 function FlyingDragonGame() {
@@ -1516,10 +2333,23 @@ function FlyingDragonGame() {
             obstacle.x + 122 > DRAGON_X - DRAGON_RADIUS &&
             world.dragonY + DRAGON_RADIUS > FLOOR_Y - 44 &&
             world.dragonY - DRAGON_RADIUS < FLOOR_Y - 19;
+          const rocketX = obstacle.x + WHALE_WIDTH / 2;
+          const rocketY = FLOOR_Y - 29;
+          const hitsRocketFire =
+            rocketX - 25 < DRAGON_X + DRAGON_RADIUS &&
+            rocketX + 20 > DRAGON_X - DRAGON_RADIUS &&
+            world.dragonY + DRAGON_RADIUS > rocketY - obstacle.fireHeight &&
+            world.dragonY - DRAGON_RADIUS < rocketY - 13;
+          const hitsFootball =
+            blowX - 22 < DRAGON_X + DRAGON_RADIUS &&
+            blowX + 22 > DRAGON_X - DRAGON_RADIUS &&
+            world.dragonY + DRAGON_RADIUS > FLOOR_Y - 53;
           const hitsObstacle =
             selectedThemeRef.current.id === "galaxy"
-              ? hitsShip
-              : hitsSpray || hitsWhale;
+              ? hitsShip || hitsRocketFire
+              : selectedThemeRef.current.id === "football"
+                ? hitsSpray || hitsFootball
+                : hitsSpray || hitsWhale;
           if (hitsObstacle) {
             finishGame();
             break;
@@ -1563,7 +2393,7 @@ function FlyingDragonGame() {
           }
         }
 
-        if (!world.storm && world.score >= world.nextStormScore) {
+        if (selectedThemeRef.current.id !== "wind" && !world.storm && world.score >= world.nextStormScore) {
           world.storm = { x: WIDTH + 90, phase: "approach", elapsed: 0 };
           world.nextStormScore = world.score + 6;
         }
@@ -1680,6 +2510,7 @@ function FlyingDragonGame() {
 
   const equippedSkin =
     DRAGON_SKINS.find((skin) => skin.id === collection.equippedSkinId) ?? DRAGON_SKINS[0];
+  const obstacleName = selectedTheme === "football" ? "football" : "whale";
 
   return (
     <div
@@ -1689,13 +2520,25 @@ function FlyingDragonGame() {
       tabIndex={0}
       onKeyDown={handleKeyDown}
       onPointerDown={flap}
-      aria-label="Flying Dragon game. Press Space, Arrow Up, or tap to fly over whale spray and avoid lightning after 10 points."
+      aria-label={
+        selectedTheme === "wind"
+          ? "Flying Dragon game. Press Space, Arrow Up, or tap to fly over whales beneath a windy sky. The wind is only scenery."
+          : selectedTheme === "football"
+            ? "Flying Dragon game. Press Space, Arrow Up, or tap to dodge footballs shot into the air and avoid lightning after 10 points."
+            : "Flying Dragon game. Press Space, Arrow Up, or tap to fly over whale spray and avoid lightning after 10 points."
+      }
     >
       <div className="dragon-game-screen">
         <canvas
           className="dragon-game-canvas"
           ref={canvasRef}
-          aria-label={`A ${equippedSkin.name.toLowerCase()} dragon flying over whales, with lightning storms after 10 points.`}
+          aria-label={
+            selectedTheme === "wind"
+              ? `A ${equippedSkin.name.toLowerCase()} dragon flying over whales beneath a breezy sky.`
+              : selectedTheme === "football"
+                ? `A ${equippedSkin.name.toLowerCase()} dragon dodging footballs shot into the air at a football match.`
+                : `A ${equippedSkin.name.toLowerCase()} dragon flying over whales, with lightning storms after 10 points.`
+          }
         />
         <div className="game-hud" aria-live="polite">
           <span className="game-hud-label">SKY SCORE</span>
@@ -1848,7 +2691,11 @@ function FlyingDragonGame() {
                                 >
                                   <span
                                     className="dragon-shop-swatch"
-                                    style={{ backgroundColor: skin.preview }}
+                                    style={{
+                                      background: skin.id === "football"
+                                        ? "radial-gradient(circle at 30% 35%, #17191d 0 2px, transparent 2.5px), radial-gradient(circle at 68% 65%, #17191d 0 2px, transparent 2.5px), #f6f5f0"
+                                        : skin.preview,
+                                    }}
                                     aria-hidden="true"
                                   />
                                   <span className="dragon-shop-name">
@@ -1881,7 +2728,9 @@ function FlyingDragonGame() {
                   <p className="game-prompt-copy">
                     {phase === "ready"
                       ? "Worlds cost tokens. Earn one every 10 points!"
-                      : `You flew past ${score} ${score === 1 ? "whale" : "whales"}. Every 10 points earns a dragon token!`}
+                      : selectedTheme === "wind"
+                        ? `You flew past ${score} ${score === 1 ? "whale" : "whales"} beneath the windy sky. Every 10 points earns a dragon token!`
+                        : `You flew past ${score} ${obstacleName}${score === 1 ? "" : "s"}. Every 10 points earns a dragon token!`}
                   </p>
                   {phase === "ready" ? (
                     <>
