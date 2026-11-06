@@ -24,9 +24,9 @@ type Obstacle = {
 
 type GamePhase = "ready" | "playing" | "over";
 type ThemeId = "sky" | "volcano" | "forest" | "ice" | "desert" | "night" | "galaxy" | "football" | "wind" | "jungle";
-type DragonSkinId = "classic" | "ember" | "moss" | "frost" | "royal" | "football" | "gangsta" | "rudolph" | "wind" | "tuxedo" | "dragonfruit" | "milkyway" | "scansoriopterygid";
+type DragonSkinId = "classic" | "ember" | "moss" | "frost" | "royal" | "football" | "gangsta" | "rudolph" | "wind" | "tuxedo" | "dragonfruit" | "milkyway" | "scansoriopterygid" | "purple-lightning";
 type DragonAccessory = "flame" | "leaves" | "ice" | "crown" | "spots" | "gangsta" | "deer" | "wind" | "cat" | "dragonfruit" | "milkyway" | "scansoriopterygid" | "none";
-type DragonRarity = "Noob" | "Epic" | "Legendary" | "Ultra";
+type DragonRarity = "Noob" | "Common" | "Epic" | "Legendary" | "Ultra" | "???";
 
 type WorldTheme = {
   id: ThemeId;
@@ -291,9 +291,48 @@ const DRAGON_SKINS: DragonSkin[] = [
     accent: "#a34d35",
     accessory: "scansoriopterygid",
   },
+  {
+    id: "purple-lightning",
+    name: "Purple Lightning",
+    icon: "⚡",
+    rarity: "???",
+    cost: 0,
+    preview: "#7135c8",
+    body: "#8236dc",
+    bodyDark: "#35116f",
+    wing: "#d7aaff",
+    wingLine: "rgba(255, 230, 94, 0.9)",
+    belly: "#f3d54e",
+    snout: "#e8c843",
+    horn: "#b354f4",
+    accent: "#ffe65c",
+    accessory: "none",
+  },
 ];
 
-const DRAGON_RARITIES: DragonRarity[] = ["Noob", "Epic", "Legendary", "Ultra"];
+const DRAGON_RARITIES: DragonRarity[] = ["Noob", "Common", "Epic", "Legendary", "Ultra", "???"];
+const MYSTERI_CLOUD_COST = 30;
+const MYSTERI_CLOUD_DROPS: { weight: number; skinIds: DragonSkinId[] }[] = [
+  { weight: 50, skinIds: ["ember", "frost", "moss", "wind"] },
+  { weight: 30, skinIds: ["royal", "rudolph", "scansoriopterygid"] },
+  { weight: 10, skinIds: ["gangsta", "tuxedo", "dragonfruit"] },
+  { weight: 7, skinIds: ["classic"] },
+  { weight: 3, skinIds: ["purple-lightning"] },
+];
+
+function drawMysteriCloudReward() {
+  let roll = Math.random() * 100;
+  for (const drop of MYSTERI_CLOUD_DROPS) {
+    roll -= drop.weight;
+    if (roll < 0) {
+      const skinId = drop.skinIds[Math.floor(Math.random() * drop.skinIds.length)];
+      const skin = DRAGON_SKINS.find((candidate) => candidate.id === skinId);
+      if (!skin) throw new Error(`Mysteri Cloud references unknown dragon skin "${skinId}".`);
+      return skin;
+    }
+  }
+  throw new Error("Mysteri Cloud drop weights must total 100.");
+}
 
 const DEFAULT_DRAGON_COLLECTION: DragonCollection = {
   tokens: 0,
@@ -507,7 +546,66 @@ type GameWorld = {
   storm: Storm | null;
   nextStormScore: number;
   nextTokenScore: number;
+  fruits: { x: number; y: number }[];
+  invincible: number;
+  boost: number;
+  dash: number;
 };
+
+type PowerUpId = "dash" | "boost" | "invincible";
+
+const POWER_UPS: { id: PowerUpId; name: string; cost: number; icon: string; key: string }[] = [
+  { id: "dash", name: "Dash", cost: 5, icon: "💨", key: "1" },
+  { id: "boost", name: "Speed boost", cost: 10, icon: "⚡", key: "2" },
+  { id: "invincible", name: "Invincibility", cost: 15, icon: "🛡️", key: "3" },
+];
+const DRAGONFRUIT_KEY = "flyingDragonFruits";
+const FRUIT_SPAWN_CHANCE = 0.1;
+const FRUIT_RADIUS = 16;
+const INVINCIBLE_SECONDS = 5;
+const BOOST_SECONDS = 10;
+const DASH_SECONDS = 0.45;
+
+function loadDragonfruits() {
+  try {
+    const stored = Number(localStorage.getItem(DRAGONFRUIT_KEY));
+    return Number.isFinite(stored) && stored > 0 ? Math.floor(stored) : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function drawDragonfruit(context: CanvasRenderingContext2D, x: number, y: number, time: number) {
+  context.save();
+  context.translate(x, y + Math.sin(time * 3 + x * 0.02) * 4);
+  context.fillStyle = "#4fb35a";
+  for (const angle of [-0.9, 0, 0.9]) {
+    context.save();
+    context.rotate(angle);
+    context.beginPath();
+    context.ellipse(0, -17, 4, 9, 0, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
+  }
+  context.fillStyle = "#e5307f";
+  context.beginPath();
+  context.ellipse(0, 0, 14, 17, 0, 0, Math.PI * 2);
+  context.fill();
+  context.fillStyle = "#4fb35a";
+  context.beginPath();
+  context.ellipse(-12, 2, 5, 9, -0.5, 0, Math.PI * 2);
+  context.ellipse(12, 2, 5, 9, 0.5, 0, Math.PI * 2);
+  context.fill();
+  context.fillStyle = "#fff";
+  context.beginPath();
+  context.arc(0, 2, 6, 0, Math.PI * 2);
+  context.fill();
+  context.fillStyle = "#222";
+  for (const [dx, dy] of [[-2, 0], [2, 2], [0, 5]]) {
+    context.fillRect(dx - 0.5, dy, 1.5, 1.5);
+  }
+  context.restore();
+}
 
 function makeWorld(phase: GamePhase = "ready"): GameWorld {
   return {
@@ -524,6 +622,10 @@ function makeWorld(phase: GamePhase = "ready"): GameWorld {
     storm: null,
     nextStormScore: 10,
     nextTokenScore: 10,
+    fruits: [],
+    invincible: 0,
+    boost: 0,
+    dash: 0,
   };
 }
 
@@ -545,6 +647,81 @@ function drawCloud(
   context.ellipse(25, 4, 17, 14, 0, 0, Math.PI * 2);
   context.fill();
   context.restore();
+}
+
+function drawPurpleLightningWeather(context: CanvasRenderingContext2D, time: number) {
+  const drift = (time * 18) % (WIDTH + 180);
+  const clouds = [
+    { x: 70 + drift, y: 92, scale: 0.9, color: "#f5d84b", offset: 0 },
+    { x: 500 - drift * 0.62, y: 145, scale: 0.72, color: "#ffe875", offset: 1.2 },
+    {
+      x: 730 + Math.sin(time * 0.45) * 55,
+      y: 94,
+      scale: 1.08,
+      color: "#f2d13d",
+      offset: 2.4,
+    },
+  ];
+
+  for (const cloud of clouds) {
+    drawCloud(context, cloud.x, cloud.y, cloud.scale, cloud.color);
+
+    const cycle = (time + cloud.offset) % 3.6;
+    const strikeAlpha =
+      cycle < 0.13
+        ? 1
+        : cycle < 0.22
+          ? 1 - (cycle - 0.13) / 0.09
+          : cycle < 0.31
+            ? 0
+            : cycle < 0.39
+              ? 0.8 * (1 - (cycle - 0.31) / 0.08)
+              : 0;
+    if (strikeAlpha <= 0) continue;
+
+    const boltX = cloud.x + Math.sin(time * 2 + cloud.offset) * 12;
+    const boltY = cloud.y + 14;
+    const points: [number, number][] = [
+      [boltX, boltY],
+      [boltX - 18, boltY + 52],
+      [boltX + 8, boltY + 66],
+      [boltX - 25, boltY + 124],
+      [boltX - 4, boltY + 136],
+      [boltX - 31, boltY + 199],
+      [boltX - 12, boltY + 215],
+      [boltX - 38, boltY + 286],
+    ];
+
+    context.save();
+    context.globalAlpha = strikeAlpha;
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.shadowColor = "#9c35ff";
+    context.shadowBlur = 28;
+    context.strokeStyle = "#8c28ff";
+    context.lineWidth = 15;
+    context.beginPath();
+    context.moveTo(points[0][0], points[0][1]);
+    for (const [x, y] of points.slice(1)) context.lineTo(x, y);
+    context.stroke();
+
+    context.shadowBlur = 12;
+    context.strokeStyle = "#c17aff";
+    context.lineWidth = 6;
+    context.beginPath();
+    context.moveTo(points[0][0], points[0][1]);
+    for (const [x, y] of points.slice(1)) context.lineTo(x, y);
+    context.stroke();
+
+    context.strokeStyle = "#eedbff";
+    context.shadowBlur = 5;
+    context.lineWidth = 2;
+    context.beginPath();
+    context.moveTo(points[0][0], points[0][1]);
+    for (const [x, y] of points.slice(1)) context.lineTo(x, y);
+    context.stroke();
+    context.restore();
+  }
 }
 
 function sprayTopY(obstacle: Obstacle, time: number, short = false) {
@@ -1459,9 +1636,43 @@ function drawDragon(
   if (skin.id === "milkyway") {
     context.shadowColor = "rgba(181, 163, 255, 0.55)";
     context.shadowBlur = 10;
+  } else if (skin.id === "purple-lightning") {
+    context.shadowColor = `rgba(169, 79, 255, ${0.65 + Math.sin(glowTime * 7) * 0.2})`;
+    context.shadowBlur = 22;
   } else if (skin.accessory === "gangsta") {
     context.shadowColor = "rgba(255, 166, 12, 1)";
     context.shadowBlur = 30 + (Math.sin(glowTime * 4) + 1) * 12;
+  }
+
+  if (skin.id === "purple-lightning") {
+    context.save();
+    context.globalAlpha = 0.65 + Math.sin(glowTime * 8) * 0.2;
+    context.lineWidth = 2.5;
+    context.lineJoin = "round";
+    context.shadowBlur = 12;
+    context.shadowColor = "#a23bff";
+    context.strokeStyle = "#b44aff";
+    context.beginPath();
+    context.moveTo(-34, -29);
+    context.lineTo(-27, -23);
+    context.lineTo(-32, -16);
+    context.lineTo(-24, -12);
+    context.moveTo(34, -32);
+    context.lineTo(29, -25);
+    context.lineTo(36, -20);
+    context.lineTo(30, -13);
+    context.moveTo(39, 8);
+    context.lineTo(33, 14);
+    context.lineTo(39, 20);
+    context.stroke();
+    context.shadowColor = "#ffe64a";
+    context.strokeStyle = "#ffe64a";
+    context.beginPath();
+    context.moveTo(-39, 3);
+    context.lineTo(-34, 8);
+    context.lineTo(-39, 13);
+    context.stroke();
+    context.restore();
   }
 
   context.fillStyle = "rgba(42, 34, 69, 0.2)";
@@ -1495,7 +1706,15 @@ function drawDragon(
   context.save();
   context.translate(-5, -8);
   context.rotate(wingBeat);
-  context.fillStyle = skin.wing;
+  if (skin.id === "purple-lightning") {
+    const wingGradient = context.createLinearGradient(-34, -35, -1, 2);
+    wingGradient.addColorStop(0, "#7b35db");
+    wingGradient.addColorStop(0.52, "#f5d845");
+    wingGradient.addColorStop(1, "#9d45ed");
+    context.fillStyle = wingGradient;
+  } else {
+    context.fillStyle = skin.wing;
+  }
   context.beginPath();
   context.moveTo(1, 4);
   context.quadraticCurveTo(-2, -40, -34, -42);
@@ -1576,7 +1795,16 @@ function drawDragon(
   context.stroke();
   context.restore();
 
-  context.fillStyle = skin.body;
+  if (skin.id === "purple-lightning") {
+    const bodyGradient = context.createLinearGradient(-30, 0, 25, 0);
+    bodyGradient.addColorStop(0, "#7130c7");
+    bodyGradient.addColorStop(0.48, "#9c46e8");
+    bodyGradient.addColorStop(0.5, "#f4d43f");
+    bodyGradient.addColorStop(1, "#ffe86a");
+    context.fillStyle = bodyGradient;
+  } else {
+    context.fillStyle = skin.body;
+  }
   context.beginPath();
   context.ellipse(-3, 3, 27, 19, -0.08, 0, Math.PI * 2);
   context.fill();
@@ -1637,6 +1865,30 @@ function drawDragon(
       context.arc(starX, starY, radius, 0, Math.PI * 2);
       context.fill();
     }
+    context.restore();
+  }
+  if (skin.id === "purple-lightning") {
+    context.save();
+    context.beginPath();
+    context.ellipse(-3, 3, 27, 19, -0.08, 0, Math.PI * 2);
+    context.clip();
+    context.globalAlpha = 0.9;
+    context.shadowColor = "#fff16a";
+    context.shadowBlur = 7;
+    context.strokeStyle = "#fff16a";
+    context.lineWidth = 2.4;
+    context.lineJoin = "round";
+    context.beginPath();
+    context.moveTo(-20, -8);
+    context.lineTo(-13, -2);
+    context.lineTo(-17, 4);
+    context.lineTo(-5, 1);
+    context.lineTo(-1, 8);
+    context.moveTo(9, -10);
+    context.lineTo(4, -3);
+    context.lineTo(11, 0);
+    context.lineTo(5, 7);
+    context.stroke();
     context.restore();
   }
   context.fillStyle = skin.belly;
@@ -1705,6 +1957,25 @@ function drawDragon(
     context.beginPath();
     context.ellipse(43, -1, 1.6, 1, 0, 0, Math.PI * 2);
     context.fill();
+  } else if (skin.id === "purple-lightning") {
+    context.save();
+    context.shadowColor = "#fff16a";
+    context.shadowBlur = 8;
+    context.fillStyle = "#ffe64a";
+    context.beginPath();
+    context.arc(21.3, -9, 3, Math.PI / 2, Math.PI * 1.5);
+    context.closePath();
+    context.fill();
+    context.fillStyle = "#b33cff";
+    context.beginPath();
+    context.arc(21.3, -9, 3, -Math.PI / 2, Math.PI / 2);
+    context.closePath();
+    context.fill();
+    context.fillStyle = "#fff";
+    context.beginPath();
+    context.arc(22, -10, 0.8, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
   } else {
     context.fillStyle = skin.snout;
     context.beginPath();
@@ -2131,6 +2402,10 @@ function drawWorld(
   context.stroke();
   }
 
+  if (dragonSkin.id === "purple-lightning") {
+    drawPurpleLightningWeather(context, timestamp / 1000);
+  }
+
   if (dragonSkin.id === "milkyway") {
     drawMilkywayShootingStars(context, timestamp / 1000);
   }
@@ -2158,6 +2433,38 @@ function drawWorld(
     drawMuffinScratch(context, world.dragonY, timestamp / 1000);
   }
 
+  for (const fruit of world.fruits) {
+    drawDragonfruit(context, fruit.x, fruit.y, timestamp / 1000);
+  }
+
+  if (world.invincible > 0 && world.phase === "playing") {
+    context.save();
+    context.globalAlpha = world.invincible < 1 ? 0.35 + 0.25 * Math.sin(timestamp / 60) : 0.55;
+    context.shadowColor = "#46bfff";
+    context.shadowBlur = 14;
+    context.strokeStyle = "#72dcff";
+    context.fillStyle = "rgba(55, 170, 255, 0.25)";
+    context.lineWidth = 3;
+    context.beginPath();
+    context.arc(DRAGON_X, world.dragonY, DRAGON_RADIUS + 14, 0, Math.PI * 2);
+    context.fill();
+    context.stroke();
+    context.restore();
+  }
+  if (world.dash > 0 || (world.boost > 0 && world.phase === "playing")) {
+    context.save();
+    context.strokeStyle = "rgba(255, 255, 255, 0.7)";
+    context.lineWidth = 3;
+    for (let line = 0; line < 4; line += 1) {
+      const y = world.dragonY - 18 + line * 12;
+      context.beginPath();
+      context.moveTo(DRAGON_X - 40 - line * 6, y);
+      context.lineTo(DRAGON_X - 110 - line * 14, y);
+      context.stroke();
+    }
+    context.restore();
+  }
+
   drawDragon(context, world.dragonY, world.velocity, world.elapsed, dragonSkin, timestamp / 1000);
 }
 
@@ -2172,6 +2479,56 @@ function FlyingDragonGame() {
   const [shopOpen, setShopOpen] = useState(false);
   const [storeTab, setStoreTab] = useState<"backgrounds" | "skins">("backgrounds");
   const [tokenNotice, setTokenNotice] = useState("");
+  const [fruits, setFruits] = useState(loadDragonfruits);
+  const [stock, setStock] = useState<Record<PowerUpId, number>>({ dash: 0, boost: 0, invincible: 0 });
+  const [selectedPower, setSelectedPower] = useState<PowerUpId>("dash");
+  const fruitsRef = useRef(fruits);
+  const stockRef = useRef(stock);
+  const selectedPowerRef = useRef(selectedPower);
+
+  useEffect(() => {
+    fruitsRef.current = fruits;
+    try {
+      localStorage.setItem(DRAGONFRUIT_KEY, String(fruits));
+    } catch (error) {
+      console.error("Could not save dragonfruits.", error);
+    }
+  }, [fruits]);
+
+  const addFruit = () => {
+    fruitsRef.current += 1;
+    setFruits(fruitsRef.current);
+  };
+
+  const choosePower = (id: PowerUpId) => {
+    const power = POWER_UPS.find((item) => item.id === id);
+    if (!power) return;
+    if (stockRef.current[id] === 0) {
+      if (fruitsRef.current < power.cost) return;
+      fruitsRef.current -= power.cost;
+      setFruits(fruitsRef.current);
+      stockRef.current = { ...stockRef.current, [id]: 1 };
+      setStock(stockRef.current);
+    }
+    selectedPowerRef.current = id;
+    setSelectedPower(id);
+  };
+
+  const usePower = () => {
+    const world = worldRef.current;
+    const id = selectedPowerRef.current;
+    if (world.phase !== "playing" || stockRef.current[id] === 0) return;
+    if (id === "dash") {
+      if (world.dash > 0) return;
+      world.dash = DASH_SECONDS;
+    } else if (id === "boost") {
+      world.boost = BOOST_SECONDS;
+    } else {
+      world.invincible = INVINCIBLE_SECONDS;
+    }
+    stockRef.current = { ...stockRef.current, [id]: stockRef.current[id] - 1 };
+    setStock(stockRef.current);
+  };
   const [selectedTheme, setSelectedTheme] = useState<ThemeId>("sky");
   const selectedThemeRef = useRef(
     WORLD_THEMES.find((theme) => theme.id === selectedTheme) ?? WORLD_THEMES[0],
@@ -2204,6 +2561,28 @@ function FlyingDragonGame() {
   const awardDragonToken = () => {
     setCollection((current) => ({ ...current, tokens: current.tokens + 1 }));
     setTokenNotice("+1 Dragon token!");
+    if (tokenNoticeTimerRef.current !== null) {
+      window.clearTimeout(tokenNoticeTimerRef.current);
+    }
+    tokenNoticeTimerRef.current = window.setTimeout(() => setTokenNotice(""), 2200);
+  };
+
+  const buyMysteriCloud = () => {
+    if (collection.tokens < MYSTERI_CLOUD_COST) return;
+
+    const reward = drawMysteriCloudReward();
+    const alreadyUnlocked = collection.unlockedSkinIds.includes(reward.id);
+    setCollection((current) => ({
+      ...current,
+      tokens: current.tokens - MYSTERI_CLOUD_COST,
+      unlockedSkinIds: current.unlockedSkinIds.includes(reward.id)
+        ? current.unlockedSkinIds
+        : [...current.unlockedSkinIds, reward.id],
+      equippedSkinId: reward.id,
+    }));
+    setTokenNotice(
+      `Mysteri Cloud revealed ${reward.name}${alreadyUnlocked ? " (already owned)" : ""}!`,
+    );
     if (tokenNoticeTimerRef.current !== null) {
       window.clearTimeout(tokenNoticeTimerRef.current);
     }
@@ -2304,8 +2683,26 @@ function FlyingDragonGame() {
         world.elapsed += delta;
         world.velocity += 1380 * delta;
         world.dragonY += world.velocity * delta;
+        world.invincible = Math.max(0, world.invincible - delta);
+        world.boost = Math.max(0, world.boost - delta);
+        world.dash = Math.max(0, world.dash - delta);
+        const safe = world.invincible > 0 || world.dash > 0;
+        if (safe) {
+          world.dragonY = Math.min(FLOOR_Y - DRAGON_RADIUS, Math.max(12 + DRAGON_RADIUS, world.dragonY));
+        }
 
-        const speed = 250 + Math.min(world.score * 4, 100);
+        const speed =
+          (250 + Math.min(world.score * 4, 100)) * (world.boost > 0 ? 1.5 : 1) * (world.dash > 0 ? 3 : 1);
+        for (const fruit of world.fruits) {
+          fruit.x -= speed * delta;
+        }
+        world.fruits = world.fruits.filter((fruit) => {
+          if (Math.hypot(fruit.x - DRAGON_X, fruit.y - world.dragonY) < FRUIT_RADIUS + DRAGON_RADIUS) {
+            addFruit();
+            return false;
+          }
+          return fruit.x > -40;
+        });
         for (const obstacle of world.obstacles) {
           obstacle.x -= speed * delta;
           if (!obstacle.passed && obstacle.x + WHALE_WIDTH < DRAGON_X - DRAGON_RADIUS) {
@@ -2350,7 +2747,7 @@ function FlyingDragonGame() {
               : selectedThemeRef.current.id === "football"
                 ? hitsSpray || hitsFootball
                 : hitsSpray || hitsWhale;
-          if (hitsObstacle) {
+          if (hitsObstacle && !safe) {
             finishGame();
             break;
           }
@@ -2379,7 +2776,7 @@ function FlyingDragonGame() {
               Math.abs(DRAGON_X - boltX) < DRAGON_RADIUS + 5 &&
               world.dragonY + DRAGON_RADIUS > STORM_BOLT_TOP &&
               world.dragonY - DRAGON_RADIUS < STORM_BOLT_BOTTOM;
-            if (hitsLightning) {
+            if (hitsLightning && !safe) {
               finishGame();
             } else if (storm.elapsed >= 0.32) {
               storm.phase = "fade";
@@ -2405,6 +2802,12 @@ function FlyingDragonGame() {
         const firstObstacle = world.obstacles[0];
         if (firstObstacle && firstObstacle.x + WHALE_WIDTH < 0) {
           const lastObstacle = world.obstacles[world.obstacles.length - 1];
+          if (Math.random() < FRUIT_SPAWN_CHANCE) {
+            world.fruits.push({
+              x: lastObstacle.x + WHALE_SPACING * 1.5 + WHALE_WIDTH / 2,
+              y: 120 + Math.random() * 200,
+            });
+          }
           world.obstacles.shift();
           world.obstacles.push({
             x: lastObstacle.x + WHALE_SPACING,
@@ -2499,6 +2902,17 @@ function FlyingDragonGame() {
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.code === "KeyC") {
+      event.preventDefault();
+      usePower();
+      return;
+    }
+    const digit = POWER_UPS.find((power) => event.code === `Digit${power.key}`);
+    if (digit) {
+      event.preventDefault();
+      choosePower(digit.id);
+      return;
+    }
     if (event.code !== "Space" && event.code !== "ArrowUp") return;
     event.preventDefault();
     if (worldRef.current.phase === "ready" || worldRef.current.phase === "over") {
@@ -2547,6 +2961,35 @@ function FlyingDragonGame() {
           <span className="game-token-count" aria-label={`${collection.tokens} dragon tokens`}>
             🐉 {collection.tokens}
           </span>
+        </div>
+        <div className="dragon-powerups" onPointerDown={(event) => event.stopPropagation()}>
+          <span className="dragon-fruit-count" aria-label={`${fruits} dragonfruits`}>🐲🍈 {fruits}</span>
+          {POWER_UPS.map((power) => (
+            <button
+              key={power.id}
+              type="button"
+              className={`dragon-powerup${selectedPower === power.id ? " is-selected" : ""}`}
+              disabled={stock[power.id] === 0 && fruits < power.cost}
+              onKeyDown={(event) => event.stopPropagation()}
+              onClick={() => choosePower(power.id)}
+              title={`${power.name} — ${power.cost} dragonfruits (key ${power.key})`}
+            >
+              {power.icon} {stock[power.id] > 0 ? `x${stock[power.id]}` : power.cost}
+            </button>
+          ))}
+          <button
+            type="button"
+            className="dragon-powerup dragon-powerup-use"
+            disabled={stock[selectedPower] === 0}
+            onKeyDown={(event) => event.stopPropagation()}
+            onClick={() => {
+              usePower();
+              gameRef.current?.focus();
+            }}
+            aria-label="Use power-up (C)"
+          >
+            Use (C)
+          </button>
         </div>
         {tokenNotice && (
           <div className="dragon-token-notice" role="status">
@@ -2661,13 +3104,34 @@ function FlyingDragonGame() {
                         })}
                       </section>
                     ) : (
-                      DRAGON_RARITIES.map((rarity) => {
+                      <>
+                      <section className="dragon-rarity dragon-rarity-mysteri-cloud">
+                        <h5>Mystery rewards</h5>
+                        <button
+                          type="button"
+                          className="dragon-shop-skin"
+                          aria-label={`Buy Mysteri Cloud for ${MYSTERI_CLOUD_COST} tokens. It reveals a random dragon.`}
+                          disabled={collection.tokens < MYSTERI_CLOUD_COST}
+                          onPointerDown={(event) => event.stopPropagation()}
+                          onKeyDown={(event) => event.stopPropagation()}
+                          onClick={buyMysteriCloud}
+                        >
+                          <span className="dragon-shop-swatch mysteri-cloud-swatch" aria-hidden="true">☁</span>
+                          <span className="dragon-shop-name">
+                            <strong>Mysteri Cloud</strong>
+                            <small>50% Common · 30% Epic · 10% Legendary · 7% Ultra · 3% ???</small>
+                          </span>
+                          <span className="dragon-shop-action">{MYSTERI_CLOUD_COST} tokens</span>
+                        </button>
+                      </section>
+                      {DRAGON_RARITIES.map((rarity) => {
                         const skins = DRAGON_SKINS.filter((skin) => skin.rarity === rarity);
                         if (skins.length === 0) return null;
+                        const rarityClass = rarity === "???" ? "mystery" : rarity.toLowerCase();
 
                         return (
-                          <section className={`dragon-rarity dragon-rarity-${rarity.toLowerCase()}`} key={rarity}>
-                            <h5>{rarity} Dragons</h5>
+                          <section className={`dragon-rarity dragon-rarity-${rarityClass}`} key={rarity}>
+                            <h5>{rarity === "???" ? "???" : rarity} Dragons</h5>
                             {skins.map((skin) => {
                               const unlocked = collection.unlockedSkinIds.includes(skin.id);
                               const equipped = collection.equippedSkinId === skin.id;
@@ -2677,40 +3141,71 @@ function FlyingDragonGame() {
                                   type="button"
                                   className={`dragon-shop-skin${equipped ? " is-equipped" : ""}`}
                                   aria-label={
-                                    equipped
+                                    skin.id === "purple-lightning" && !unlocked
+                                      ? "Mystery dragon reward, locked until discovered"
+                                      : equipped
                                       ? `${skin.name}, equipped`
                                       : unlocked
                                         ? `Equip ${skin.name} dragon skin`
                                         : `Buy ${skin.name} dragon skin for ${skin.cost} ${skin.cost === 1 ? "token" : "tokens"}`
                                   }
                                   aria-pressed={equipped}
-                                  disabled={!unlocked && collection.tokens < skin.cost}
+                                  disabled={skin.id === "purple-lightning" && !unlocked}
                                   onPointerDown={(event) => event.stopPropagation()}
                                   onKeyDown={(event) => event.stopPropagation()}
                                   onClick={() => selectOrBuySkin(skin)}
                                 >
-                                  <span
-                                    className="dragon-shop-swatch"
-                                    style={{
-                                      background: skin.id === "football"
-                                        ? "radial-gradient(circle at 30% 35%, #17191d 0 2px, transparent 2.5px), radial-gradient(circle at 68% 65%, #17191d 0 2px, transparent 2.5px), #f6f5f0"
-                                        : skin.preview,
-                                    }}
-                                    aria-hidden="true"
-                                  />
+                                  {skin.id === "purple-lightning" && !unlocked ? (
+                                    <span className="dragon-shop-swatch mystery-dragon-swatch" aria-hidden="true">
+                                      <svg viewBox="0 0 48 32" focusable="false">
+                                        <path
+                                          d="M5 22 2 17l7 2 4-7 6-2-3-7 8 6 5-6 2 9c5 0 8 3 10 7l5-2-3 6 2 4-9-2c-5 5-15 5-21 1l-6 4 1-7z"
+                                          fill="#030305"
+                                        />
+                                        <text x="26" y="20" fill="#fff" fontSize="13" fontWeight="bold">?</text>
+                                      </svg>
+                                    </span>
+                                  ) : (
+                                    <span
+                                      className="dragon-shop-swatch"
+                                      style={{
+                                        background: skin.id === "football"
+                                          ? "radial-gradient(circle at 30% 35%, #17191d 0 2px, transparent 2.5px), radial-gradient(circle at 68% 65%, #17191d 0 2px, transparent 2.5px), #f6f5f0"
+                                          : skin.preview,
+                                      }}
+                                      aria-hidden="true"
+                                    />
+                                  )}
                                   <span className="dragon-shop-name">
-                                    <strong>{skin.icon} {skin.name}</strong>
-                                    <small>{unlocked ? "Owned" : `${skin.cost} ${skin.cost === 1 ? "token" : "tokens"}`}</small>
+                                    <strong>
+                                      {skin.id === "purple-lightning" && !unlocked
+                                        ? "???"
+                                        : `${skin.icon} ${skin.name}`}
+                                    </strong>
+                                    <small>
+                                      {skin.id === "purple-lightning" && !unlocked
+                                        ? "Mystery Cloud reward"
+                                        : unlocked
+                                          ? "Owned"
+                                          : `${skin.cost} ${skin.cost === 1 ? "token" : "tokens"}`}
+                                    </small>
                                   </span>
                                   <span className="dragon-shop-action">
-                                    {equipped ? "Equipped" : unlocked ? "Equip" : "Buy"}
+                                    {skin.id === "purple-lightning" && !unlocked
+                                      ? "Hidden"
+                                      : equipped
+                                        ? "Equipped"
+                                        : unlocked
+                                          ? "Equip"
+                                          : "Buy"}
                                   </span>
                                 </button>
                               );
                             })}
                           </section>
                         );
-                      })
+                      })}
+                      </>
                     )}
                   </div>
                   <button

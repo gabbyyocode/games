@@ -1429,6 +1429,51 @@ h3 {
   white-space: nowrap;
 }
 
+.dragon-powerups {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 3;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.dragon-fruit-count {
+  padding: 6px 9px;
+  color: #ffd1e6;
+  background: rgba(43, 38, 73, 0.78);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dragon-powerup {
+  padding: 8px 11px;
+  color: #fff7e8;
+  background: rgba(43, 38, 73, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dragon-powerup.is-selected {
+  border-color: #ffdf91;
+  box-shadow: 0 0 0 2px rgba(255, 223, 145, 0.5);
+}
+
+.dragon-powerup:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.dragon-powerup-use {
+  padding: 12px 16px;
+  background: #e5307f;
+}
+
 .dragon-token-notice {
   position: absolute;
   top: 62px;
@@ -1712,6 +1757,10 @@ h3 {
   color: #c8c3d5;
 }
 
+.dragon-rarity-common h5 {
+  color: #9de5a8;
+}
+
 .dragon-rarity-epic h5 {
   color: #8ed4ff;
 }
@@ -1722,6 +1771,15 @@ h3 {
 
 .dragon-rarity-ultra h5 {
   color: #e6a8ff;
+}
+
+.dragon-rarity-mystery h5 {
+  color: #f2e7ff;
+}
+
+.dragon-rarity-mysteri-cloud .dragon-shop-skin {
+  border-color: rgba(179, 132, 255, 0.62);
+  background: linear-gradient(100deg, rgba(102, 61, 171, 0.38), rgba(255, 255, 255, 0.06));
 }
 
 .dragon-shop-skin {
@@ -1788,6 +1846,32 @@ h3 {
   border: 2px solid rgba(255, 255, 255, 0.72);
   border-radius: 50%;
   box-shadow: inset -4px -3px 0 rgba(0, 0, 0, 0.16);
+}
+
+.mysteri-cloud-swatch {
+  display: grid;
+  place-items: center;
+  color: #e6d7ff;
+  background: #6544a2;
+  font-size: 19px;
+  box-shadow: 0 0 8px rgba(183, 132, 255, 0.6);
+}
+
+.mystery-dragon-swatch {
+  width: 36px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #09080e;
+  border-color: #9b76d1;
+  border-radius: 5px;
+  box-shadow: 0 0 8px rgba(170, 123, 255, 0.4);
+}
+
+.mystery-dragon-swatch svg {
+  width: 34px;
+  height: 26px;
 }
 
 .dragon-shop-name {
